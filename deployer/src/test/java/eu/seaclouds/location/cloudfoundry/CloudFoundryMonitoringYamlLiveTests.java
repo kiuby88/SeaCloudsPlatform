@@ -1,21 +1,21 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
+* Licensed to the Apache Software Foundation (ASF) under one
+* or more contributor license agreements.  See the NOTICE file
+* distributed with this work for additional information
+* regarding copyright ownership.  The ASF licenses this file
+* to you under the Apache License, Version 2.0 (the
+* "License"); you may not use this file except in compliance
+* with the License.  You may obtain a copy of the License at
+*
+*     http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing,
+* software distributed under the License is distributed on an
+* "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+* KIND, either express or implied.  See the License for the
+* specific language governing permissions and limitations
+* under the License.
+*/
 package eu.seaclouds.location.cloudfoundry;
 
 import brooklyn.entity.Application;
@@ -32,43 +32,42 @@ import brooklyn.test.Asserts;
 import brooklyn.util.text.Strings;
 import org.testng.annotations.Test;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.*;
 
 @Test( groups={"Live"} )
-public class CloudFoundryYamlLiveTest {
+public class CloudFoundryMonitoringYamlLiveTests {
 
-    private final String SERVICE_NAME = "test-brooklyn-service-mysql-from-yaml";
+    private final String SERVICE_NAME = "test-brooklyn-service-mysql";
     private final String SERVICE_TYPE_ID = "cleardb";
     private final String SERVICE_PLAN = "spark";
 
-    private final String SERVER_NAME = "test-brooklyn-app-from-yaml";
-    private final String JDBC_SENSOR = SERVER_NAME+".credentials.jdbcUrl";
-    private final String NAME_SENSOR = SERVER_NAME+".credentials.name";
-    private final String HOSTNAME_SENSOR = SERVER_NAME+".credentials.hostname";
-    private final String USERNAME_SENSOR = SERVER_NAME+".credentials.username";
-    private final String PASSWORD_SENSOR = SERVER_NAME+".credentials.password";
-    private final String PORT_SENSOR = SERVER_NAME+".credentials.port";
+    private final String JDBC_SENSOR = "test-brooklyn-monitor-app.credentials.jdbcUrl";
+    private final String NAME_SENSOR = "test-brooklyn-monitor-app.credentials.name";
+    private final String HOSTNAME_SENSOR = "test-brooklyn-monitor-app.credentials.hostname";
+    private final String USERNAME_SENSOR = "test-brooklyn-monitor-app.credentials.username";
+    private final String PASSWORD_SENSOR = "test-brooklyn-monitor-app.credentials.password";
+    private final String PORT_SENSOR = "test-brooklyn-monitor-app.credentials.port";
 
     public void deployWebappWithServicesFromYaml(){
         SimpleYamlLauncher launcher = new SimpleYamlLauncher();
-        launcher.setShutdownAppsOnExit(true);
-        Application app = launcher.launchAppYaml("cf-webapp-db.yaml").getApplication();
+        launcher.setShutdownAppsOnExit(false);
+        Application app = launcher.launchAppYaml("cf-webapp-db-Monitoring.yaml").getApplication();
 
         final CloudFoundryService service = (CloudFoundryService)
                 findEntityChildByDisplayName(app, "DB HelloWorld Visitors");
 
         final CloudFoundryWebApp server = (CloudFoundryWebApp)
-                findEntityChildByDisplayName(app, "AppServer HelloWorld");
+                findEntityChildByDisplayName(app, "Web AppServer HelloWorld");
 
+        assertNotNull(server);
+        assertNotNull(service);
 
         Asserts.succeedsEventually(new Runnable() {
             public void run() {
 
-                assertNotNull(server);
-                assertNotNull(service);
+                assertNotNull(server.getAttribute(CloudFoundryWebApp.SERVICE_PROCESS_IS_RUNNING));
+
+
 
                 assertEquals(server.getAttribute(CloudFoundryWebApp.BOUND_SERVICES).size(), 1);
                 assertTrue(server.getAttribute(Startable.SERVICE_UP));
@@ -99,7 +98,6 @@ public class CloudFoundryYamlLiveTest {
                 assertEquals(service.getConfig(CloudFoundryService.SERVICE_INSTANCE_NAME),
                         SERVICE_NAME);
 
-                //dynamicSensors for credentials
                 assertFalse(Strings.isBlank((String) findSensorValueByName(service, JDBC_SENSOR)));
                 assertFalse(Strings.isBlank((String) findSensorValueByName(service, NAME_SENSOR)));
                 assertFalse(Strings.isBlank((String) findSensorValueByName(service, HOSTNAME_SENSOR)));
@@ -107,6 +105,8 @@ public class CloudFoundryYamlLiveTest {
                 assertFalse(Strings.isBlank((String) findSensorValueByName(service, PASSWORD_SENSOR)));
                 assertFalse(Strings.isBlank((String) findSensorValueByName(service, PORT_SENSOR)));
 
+                assertNotNull(server.getAttribute(JavaCloudFoundryPaasWebApp.SERVER_PROCESSING_TIME));
+                assertNotNull(server.getAttribute(JavaCloudFoundryPaasWebApp.SERVER_REQUESTS));
             }
         });
     }

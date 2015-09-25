@@ -35,7 +35,7 @@ import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertNull;
 import static org.testng.Assert.assertTrue;
 
-
+@Test(groups = {"Live"})
 public class JavaWebCloudFoundryLiveTest extends AbstractCloudFoundryPaasLocationLiveTest {
 
     private final String APPLICATION_ARTIFACT_NAME = "brooklyn-example-hello-world-webapp.war";
@@ -73,7 +73,6 @@ public class JavaWebCloudFoundryLiveTest extends AbstractCloudFoundryPaasLocatio
         });
     }
 
-    @Test(groups = {"Live"})
     protected void stopApplicationTest() throws Exception {
         final JavaCloudFoundryPaasWebApp server = app.
                 createAndManageChild(EntitySpec.create(JavaCloudFoundryPaasWebApp.class)
@@ -95,7 +94,6 @@ public class JavaWebCloudFoundryLiveTest extends AbstractCloudFoundryPaasLocatio
         });
     }
 
-    @Test(groups = {"Live"})
     protected void wrongApplicationOnFireStatusTest() throws Exception {
         final JavaCloudFoundryPaasWebApp server = app.
                 createAndManageChild(EntitySpec.create(JavaCloudFoundryPaasWebApp.class)

@@ -20,10 +20,14 @@ package brooklyn.entity.cloudfoundry.webapp;
 
 import brooklyn.entity.Entity;
 import brooklyn.entity.basic.Attributes;
+import brooklyn.entity.basic.BrooklynConfigKeys;
+import brooklyn.entity.basic.Entities;
 import brooklyn.entity.cloudfoundry.PaasEntityCloudFoundryDriver;
 import brooklyn.entity.cloudfoundry.services.CloudFoundryService;
+import brooklyn.entity.cloudfoundry.services.CloudFoundryServiceImpl;
 import brooklyn.location.cloudfoundry.CloudFoundryPaasLocation;
 import brooklyn.util.text.Strings;
+import brooklyn.util.time.Duration;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import org.cloudfoundry.client.lib.domain.CloudApplication;
@@ -139,12 +143,15 @@ public abstract class PaasWebAppCloudFoundryDriver extends PaasEntityCloudFoundr
         if (rawEntity instanceof CloudFoundryService){
 
             cloudFoundryService = (CloudFoundryService) rawEntity;
-        
+
             String serviceName = cloudFoundryService
                     .getConfig(CloudFoundryService.SERVICE_INSTANCE_NAME);
 
-
             if (!Strings.isEmpty(serviceName)){
+
+                Entities.waitForServiceUp(cloudFoundryService,
+                        cloudFoundryService.getConfig(BrooklynConfigKeys.START_TIMEOUT));
+
                 bindingServiceToEntity(serviceName);
                 setCredentialsOnService(cloudFoundryService);
                 cloudFoundryService.operation(getEntity());
@@ -210,18 +217,9 @@ public abstract class PaasWebAppCloudFoundryDriver extends PaasEntityCloudFoundr
 
     public void postLaunch() {
         CloudApplication application = getClient().getApplication(applicationName);
-        String domainUri = application.getUris().get(0);
+        String domainUri = "http://"+application.getUris().get(0);
         getEntity().setAttribute(Attributes.MAIN_URI, URI.create(domainUri));
         getEntity().setAttribute(CloudFoundryWebApp.ROOT_URL, domainUri);
-
-        /*getEntity().setAttribute(CloudFoundryWebApp.INSTANCES_NUM,
-                application.getInstances());*/
-
-        getEntity().setAttribute(CloudFoundryWebApp.MEMORY,
-                application.getMemory());
-
-        getEntity().setAttribute(CloudFoundryWebApp.DISK,
-                application.getDiskQuota());
     }
 
     @Override
