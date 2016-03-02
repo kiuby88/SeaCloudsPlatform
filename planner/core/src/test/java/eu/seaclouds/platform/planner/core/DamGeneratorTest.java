@@ -1,6 +1,8 @@
 package eu.seaclouds.platform.planner.core;
 
 import com.google.common.io.Resources;
+import eu.seaclouds.monitor.monitoringdamgenerator.MonitoringInfo;
+import org.apache.brooklyn.util.text.Strings;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import org.yaml.snakeyaml.DumperOptions;
@@ -14,6 +16,7 @@ import java.util.Map;
 import java.util.Scanner;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
@@ -38,6 +41,22 @@ import static org.testng.Assert.assertTrue;
 public class DamGeneratorTest {
 
     private static final String BROOKLYN_TYPES_MAPPING = "mapping/brooklyn-types-mapping.yaml";
+
+    static final String MONITOR_GEN_URL = "127.0.0.1";
+    static final String MONITOR_GEN_PORT = "8080";
+
+    static final String INFLUXDB_URL = "http://52.48.187.2:8086";
+    static final String INFLUXDB_PORT = "8083";
+    static final String INFLUXDB_DATABASE = "tower4clouds";
+    static final String INFLUXDB_USERNAME = "root";
+    static final String INFLUXDB_PASSWORD = "root";
+
+    static final String GRAFANA_ENDPOINT = "http://52.48.187.2:3000";
+    static final String GRAFANA_USERNAME = "admin";
+    static final String GRAFANA_PASSWROD = "admin";
+
+    static final String SLA_ENDPOINT = "http://52.36.119.104:9003";
+    static final String T4C_ENDPOINT = "http://52.48.187.2:8170";
 
     @Test
     public void  damBrooklynTest() throws Exception {
@@ -69,7 +88,10 @@ public class DamGeneratorTest {
         Map<String, Object> adpYaml = (HashMap<String, Object>) yml.load(adp);
 
         adpYaml = DamGenerator.translateAPD(adpYaml);
-        adpYaml = DamGenerator.addMonitorInfo(adp, "127.0.0.1", "8080", "127.0.0.1", "8083");
+
+        MonitoringInfo monitoringInfo = DamGenerator.generateMonitoringInfo(yml.dump(adpYaml),
+                MONITOR_GEN_URL, MONITOR_GEN_PORT, INFLUXDB_URL, INFLUXDB_PORT);
+        adpYaml = DamGenerator.addMonitorInfo(monitoringInfo);
 
         String dam = yml.dump(adpYaml);
         Assert.assertNotNull(adpYaml);
@@ -215,7 +237,10 @@ public class DamGeneratorTest {
 
         adpYaml = DamGenerator.manageTemplateMetada(adpYaml);
         adpYaml = DamGenerator.translateAPD(adpYaml);
-        adpYaml = DamGenerator.addMonitorInfo(yml.dump(adpYaml), "127.0.0.1", "8080", "127.0.0.1", "8083");
+
+        MonitoringInfo monitoringInfo = DamGenerator.generateMonitoringInfo(yml.dump(adpYaml),
+                "127.0.0.1", "8080", "127.0.0.1", "8083");
+        adpYaml = DamGenerator.addMonitorInfo(monitoringInfo);
 
         Map groups = (Map) adpYaml.remove(DamGenerator.GROUPS);
 
@@ -235,11 +260,66 @@ public class DamGeneratorTest {
         assertTrue(topologyGroups.containsKey("add_brooklyn_location_App42_PaaS_America_US"));
         assertTrue(topologyGroups.containsKey("monitoringInformation"));
 
-
         String dam = yml.dump(adpYaml);
         Assert.assertNotNull(adpYaml);
 
     }
+
+
+    @Test
+    public void testDamGenerator() throws Exception{
+
+        DumperOptions options = new DumperOptions();
+        options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+
+        String adp = new Scanner(new File(Resources.getResource("adps/nuro3_ADP1.yml").toURI())).useDelimiter("\\Z").next();
+        String dam = DamGenerator.generateDam(adp,
+                MONITOR_GEN_URL,
+                MONITOR_GEN_PORT,
+                INFLUXDB_URL,
+                INFLUXDB_PORT,
+                INFLUXDB_DATABASE,
+                INFLUXDB_USERNAME,
+                INFLUXDB_PASSWORD,
+                GRAFANA_ENDPOINT,
+                GRAFANA_USERNAME,
+                GRAFANA_PASSWROD,
+                SLA_ENDPOINT,
+                T4C_ENDPOINT);
+
+        Yaml yml = new Yaml(options);
+        Map<String, Object> damYaml = (HashMap<String, Object>) yml.load(dam);
+
+        assertTrue(damYaml.containsKey(DamGenerator.TOPOLOGY_TEMPLATE));
+        Map<String, Object> topologyTemplate =
+                (Map<String, Object>) damYaml.get(DamGenerator.TOPOLOGY_TEMPLATE);
+        assertTrue(topologyTemplate.containsKey(DamGenerator.GROUPS));
+
+        Map<String, Object> groups = (Map<String, Object>) topologyTemplate.get(DamGenerator.GROUPS);
+        assertTrue(groups.containsKey(DamGenerator.SEACLOUDS_APPLICATION_CONFIGURATION));
+
+        Map<String, Object> seacloudsConfigurationGroup =
+                (Map<String, Object>) groups.get(DamGenerator.SEACLOUDS_APPLICATION_CONFIGURATION);
+        List<String> members = (List<String>) seacloudsConfigurationGroup.get(DamGenerator.MEMBERS);
+        assertTrue(members.isEmpty());
+
+        List<Map<String, Object>> policies =
+                (List<Map<String, Object>>) seacloudsConfigurationGroup.get(DamGenerator.POLICIES);
+        assertEquals(policies.size(), 1);
+
+        Map<String, Object> policy = policies.get(0);
+        assertTrue(policy.containsKey(DamGenerator.SEACLOUDS_APPLICATION_CONFIGURATION_POLICY));
+        Map<String, Object> policyConfiguration =
+                (Map<String, Object>) policy.get(DamGenerator.SEACLOUDS_APPLICATION_CONFIGURATION_POLICY);
+        assertEquals(policyConfiguration.get(DamGenerator.TYPE),
+                DamGenerator.SEACLOUDS_INITIALIZER_POLICY);
+
+        assertFalse(Strings.isBlank((String)policyConfiguration.get("t4cRules")));
+        assertFalse(Strings.isBlank((String)policyConfiguration.get("slaAgreement")));
+
+
+    }
+
 
 
 }

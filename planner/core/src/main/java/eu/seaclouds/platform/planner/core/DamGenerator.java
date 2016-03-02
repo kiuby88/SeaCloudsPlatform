@@ -1,15 +1,42 @@
 package eu.seaclouds.platform.planner.core;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Resources;
 import eu.seaclouds.monitor.monitoringdamgenerator.MonitoringDamGenerator;
 import eu.seaclouds.monitor.monitoringdamgenerator.MonitoringInfo;
+import it.polimi.tower4clouds.rules.MonitoringRule;
+import it.polimi.tower4clouds.rules.MonitoringRules;
+import org.apache.brooklyn.util.collections.MutableList;
+import org.apache.brooklyn.util.collections.MutableMap;
 import org.apache.brooklyn.util.text.Identifiers;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.http.NameValuePair;
+import org.apache.http.message.BasicNameValuePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.annotation.adapters.XmlAdapter;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
+
 import static com.google.common.base.Preconditions.*;
+
+import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
@@ -76,19 +103,61 @@ public class DamGenerator {
     public static final String SEACLOUDS_APPLICATION_POLICY_NAME = "seaclouds.app.information";
     public static final String SEACLOUDS_NODE_PREFIX = "seaclouds.nodes";
 
+
+    public static final String SEACLOUDS_APPLICATION_CONFIGURATION =
+            "seaclouds.application.configuration";
+    public static final String SEACLOUDS_APPLICATION_CONFIGURATION_POLICY =
+            "seaclouds.policies.application.configuration";
+
+    public static final String SEACLOUDS_INITIALIZER_POLICY =
+            "eu.seaclouds.policy.SeaCloudsInitializerPolicy";
+
     private static DeployerTypesResolver deployerTypesResolver;
     static Map<String, MonitoringInfo> monitoringInfoByApplication=new HashMap<>();
 
-    public static String generateDam(String adp, String monitorGenURL, String monitorGenPort, String slaGenURL, String influxdbURL, String influxdbPort){
-        Yaml yml = new Yaml();
+    public static String generateDam(String adp,
+                                     String monitorGenURL,
+                                     String monitorGenPort,
+                                     String influxdbURL,
+                                     String influxdbPort,
+                                     String influxdbDatabase,
+                                     String influxdbUsername,
+                                     String influxdbPassword,
+                                     String grafanaEndpoint,
+                                     String grafanaUsername,
+                                     String grafanaPassword,
+                                     String slaEndpoint,
+                                     String t4cEndpoint){
+        DumperOptions options = new DumperOptions();
+        options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+        Yaml yml = new Yaml(options);
         Map<String, Object> adpYaml = (Map<String, Object>) yml.load(adp);
         adpYaml = DamGenerator.manageTemplateMetada(adpYaml);
         adpYaml = DamGenerator.translateAPD(adpYaml);
-        adpYaml = DamGenerator.addMonitorInfo(yml.dump(adpYaml), monitorGenURL, monitorGenPort, influxdbURL, influxdbPort);
 
-        String slaInfoResponse = new HttpHelper(slaGenURL).postInBody(SLA_GEN_OP, yml.dump(adpYaml));
-        checkNotNull(slaInfoResponse, "Error getting SLA info");
-        adpYaml = DamGenerator.addApplicationInfo(adpYaml, slaInfoResponse, SLA_INFO_GROUPNAME);
+        MonitoringInfo monitoringInfo = generateMonitoringInfo(
+                yml.dump(adpYaml),
+                monitorGenURL,
+                monitorGenPort,
+                influxdbURL,
+                influxdbPort);
+        adpYaml = DamGenerator.addMonitorInfo(monitoringInfo);
+
+        ApplicationMonitorId applicationMonitorId = getApplicationMonitorId(adpYaml, slaEndpoint);;
+        adpYaml = DamGenerator.addApplicationInfo(adpYaml, applicationMonitorId, SLA_INFO_GROUPNAME);
+
+        addSeaCloudsPolicy(adpYaml,
+                monitoringInfo,
+                applicationMonitorId,
+                slaEndpoint,
+                t4cEndpoint,
+                influxdbURL,
+                influxdbDatabase,
+                influxdbUsername,
+                influxdbPassword,
+                grafanaEndpoint,
+                grafanaUsername,
+                grafanaPassword);
 
         Map groups = (Map) adpYaml.remove(GROUPS);
 
@@ -96,10 +165,29 @@ public class DamGenerator {
 
         ((Map)adpYaml.get(TOPOLOGY_TEMPLATE)).put(GROUPS, groups);
 
+
+
         String adpStr = yml.dump(adpYaml);
         return adpStr;
     }
-    
+
+    public static ApplicationMonitorId getApplicationMonitorId(Map<String, Object> adpYaml, String slaEndpoint){
+
+        Yaml yml = new Yaml();
+        ApplicationMonitorId applicationMonitorId = null;
+        String slaInfoResponse = null;
+        try {
+        slaInfoResponse = new HttpHelper(slaEndpoint).postInBody(SLA_GEN_OP, yml.dump(adpYaml));
+        checkNotNull(slaInfoResponse, "Error getting SLA info");
+        ObjectMapper mapper = new ObjectMapper();
+            applicationMonitorId = mapper.readValue(slaInfoResponse, ApplicationMonitorId.class);
+        } catch (IOException e) {
+            log.error("Error during agreement template generation, response: {} ", slaInfoResponse);
+            e.printStackTrace();
+        }
+        return  applicationMonitorId;
+    }
+
     public static Map<String, Object> manageTemplateMetada(Map<String, Object> adpYaml){
         if(adpYaml.containsKey(IMPORTS)){
             List<String> imports = (List<String>) adpYaml.get(IMPORTS);
@@ -129,20 +217,30 @@ public class DamGenerator {
         return adpYaml;
     }
 
-    public static Map<String, Object> addMonitorInfo(String adp, String monitorUrl, String monitorPort, String influxdbUrl, String influxdbPort){      
-        
+    public static MonitoringInfo generateMonitoringInfo(String adp,
+                                                        String monitorUrl,
+                                                        String monitorPort,
+                                                        String influxdbUrl,
+                                                        String influxdbPort){
+        MonitoringInfo monitoringInfo = null;
         MonitoringDamGenerator monDamGen = null;
-        DeployerTypesResolver deployerTypesResolver = getDeployerIaaSTypeResolver();
-
         try {
-            monDamGen = new MonitoringDamGenerator(new URL("http://"+ monitorUrl +":"+ monitorPort +""), new URL("http://"+ influxdbUrl +":"+ influxdbPort +""));
+            monDamGen = new MonitoringDamGenerator(
+                    new URL("http://"+ monitorUrl +":"+ monitorPort +""),
+                    new URL("http://"+ influxdbUrl +":"+ influxdbPort +""));
         } catch (MalformedURLException e) {
             log.error(e.getMessage());
         }
+        monitoringInfo = monDamGen.generateMonitoringInfo(adp);
+
+        return monitoringInfo;
+    }
+
+    public static Map<String, Object> addMonitorInfo(MonitoringInfo monitoringInfo){
+
         String generatedApplicationId = UUID.randomUUID().toString();
 
-        MonitoringInfo generated = monDamGen.generateMonitoringInfo(adp);
-        monitoringInfoByApplication.put(generatedApplicationId, generated);
+        monitoringInfoByApplication.put(generatedApplicationId, monitoringInfo);
 
         HashMap<String, Object> appGroup = new HashMap<>();
         appGroup.put(MEMBERS, Arrays.asList(APPLICATION));
@@ -159,15 +257,86 @@ public class DamGenerator {
         appGroup.put(POLICIES, policiesList);
 
         Yaml yml = new Yaml();
-        Map<String, Object> adpYaml = (Map<String, Object>) yml.load(generated.getReturnedAdp());
+        Map<String, Object> adpYaml = (Map<String, Object>) yml.load(monitoringInfo.getReturnedAdp());
         Map<String, Object> groups = (Map<String, Object>) adpYaml.get(GROUPS);
         groups.put(MONITOR_INFO_GROUPNAME, appGroup);
 
-        //Adding DC NodeType Definition.
-        ((Map<String, Object>)adpYaml.get(NODE_TYPES))
-                .put(SEACLOUDS_DC_TYPE, deployerTypesResolver.getNodeTypeDefinition(SEACLOUDS_DC_TYPE));
-
         return adpYaml;
+    }
+
+    public static Map<String, Object> addSeaCloudsPolicy(Map<String, Object> adp,
+                                                         MonitoringInfo monitoringInfo,
+                                                         ApplicationMonitorId applicationMonitorId,
+                                                         String slaEndpoint,
+                                                         String t4cEndpoint,
+                                                         String influxdbEndpoint,
+                                                         String influxdbDatabase,
+                                                         String influxdbUsername,
+                                                         String influxdbPassword,
+                                                         String grafanaEndpoint,
+                                                         String grafanaUsername,
+                                                         String grafanaPassword){
+
+        String encodedAgreement = encodeAgreement(applicationMonitorId, slaEndpoint);
+
+        Map<String, Object> seaCloudsPolicyConfiguration = MutableMap.of();
+        seaCloudsPolicyConfiguration.put(TYPE, SEACLOUDS_INITIALIZER_POLICY);
+        seaCloudsPolicyConfiguration.put("slaEndpoint",slaEndpoint);
+        seaCloudsPolicyConfiguration.put("slaAgreement",encodedAgreement);
+        seaCloudsPolicyConfiguration.put("t4cEndpoint",t4cEndpoint);
+        seaCloudsPolicyConfiguration.put("t4cRules",encodeBase64MonitoringRules(monitoringInfo));
+        seaCloudsPolicyConfiguration.put("influxdbEndpoint",influxdbEndpoint );
+        seaCloudsPolicyConfiguration.put("influxdbDatabase",influxdbDatabase );
+        seaCloudsPolicyConfiguration.put("influxdbUsername",influxdbUsername );
+        seaCloudsPolicyConfiguration.put("influxdbPassword",influxdbPassword );
+        seaCloudsPolicyConfiguration.put("grafanaEndpoint",grafanaEndpoint);
+        seaCloudsPolicyConfiguration.put("grafanaUsername",grafanaUsername);
+        seaCloudsPolicyConfiguration.put("grafanaPassword",grafanaPassword);
+
+        Map<String, Object> seaCloudsPolicy = MutableMap.of();
+        seaCloudsPolicy.put(SEACLOUDS_APPLICATION_CONFIGURATION_POLICY, seaCloudsPolicyConfiguration);
+
+        Map<String, Object> seaCloudsApplicationGroup = MutableMap.of();
+        seaCloudsApplicationGroup.put(MEMBERS, ImmutableList.of());
+        seaCloudsApplicationGroup.put(POLICIES, ImmutableList.of(seaCloudsPolicy));
+
+        Map<String, Object> groups = (Map<String, Object>) adp.get(GROUPS);
+        groups.put(SEACLOUDS_APPLICATION_CONFIGURATION, seaCloudsApplicationGroup);
+
+        return adp;
+    }
+
+    public static String encodeAgreement(ApplicationMonitorId applicationMonitorId, String slaEndpoint){
+        List<NameValuePair> paremeters = MutableList.of((NameValuePair)
+                new BasicNameValuePair("templateId", applicationMonitorId.getId()));
+        String agreement = new HttpHelper(slaEndpoint).getRequest(
+                "/seaclouds/commands/fromtemplate",
+                paremeters);
+        return Base64.encodeBase64String(agreement.getBytes());
+    }
+
+    public static String encodeBase64MonitoringRules(MonitoringInfo monitoringInfo){
+        StringWriter sw = new StringWriter();
+        String encodeMonitoringRules = null;
+        JAXBContext jaxbContext = null;
+        String marshalledMonitoringRules = null;
+        try {
+            jaxbContext = JAXBContext.newInstance(MonitoringRules.class);
+            Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
+            jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+
+            jaxbMarshaller.marshal(monitoringInfo.getApplicationMonitoringRules(), sw);
+            marshalledMonitoringRules = sw.toString();
+
+        } catch (JAXBException e) {
+            log.error("Monitoring rules {} can not be marshalled by addSeaCloudsPolicy in " +
+                            "DamGenerator",
+                    monitoringInfo.getApplicationMonitoringRules());
+        }
+
+        encodeMonitoringRules= Base64
+                .encodeBase64String(marshalledMonitoringRules.getBytes());
+        return encodeMonitoringRules;
     }
 
     public static Map<String, Object> translateAPD(Map<String, Object> adpYaml){
@@ -284,19 +453,18 @@ public class DamGenerator {
         return deployerTypesResolver;
     }
 
-    public static Map<String, Object> addApplicationInfo(Map<String, Object> damYml, String serviceResponse, String groupName){
+    public static Map<String, Object> addApplicationInfo(Map<String, Object> damYml,
+                                                         ApplicationMonitorId applicationMonitorId,
+                                                         String groupName){
         Map<String, Object> groups = (Map<String, Object>) damYml.get(GROUPS);
 
         try {
-            ObjectMapper mapper = new ObjectMapper();
-            ApplicationMonitorId i = mapper.readValue(serviceResponse, ApplicationMonitorId.class);
-
             HashMap<String, Object> appGroup = new HashMap<>();
             appGroup.put(MEMBERS, Arrays.asList(APPLICATION));
 
             Map<String, Object> policy = new HashMap<>();
             HashMap<String, String> policyProperties = new HashMap<>();
-            policyProperties.put(ID, i.id);
+            policyProperties.put(ID, applicationMonitorId.id);
             policyProperties.put(TYPE, SEACLOUDS_APPLICATION_INFORMATION_POLICY_TYPE);
             policy.put(SEACLOUDS_APPLICATION_POLICY_NAME, policyProperties);
 
