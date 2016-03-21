@@ -1,6 +1,7 @@
 package eu.seaclouds.platform.planner.core;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Resources;
@@ -79,7 +80,8 @@ public class DamGenerator {
     public static final String NODE_TEMPLATES = "node_templates";
     public static final String NODE_TYPES = "node_types";
     public static final String PROPERTIES = "properties";
-    public static final String BROOKLYN_TYPES_MAPPING = "mapping/brooklyn-types-mapping.yaml";
+    public static final String BROOKLYN_IAAS_TYPES_MAPPING = "mapping/brooklyn-iaas-types-mapping.yaml";
+    public static final String BROOKLYN_PAAS_TYPES_MAPPING = "mapping/brooklyn-paas-types-mapping.yaml";
     public static final String BROOKLYN_POLICY_TYPE = "brooklyn.location";
     public static final String IMPORTS = "imports";
     public static final String TOSCA_NORMATIVE_TYPES = "tosca-normative-types";
@@ -139,24 +141,6 @@ public class DamGenerator {
 
     private void init() {
         agreementManager = new SlaAgreementManager(slaEndpoint);
-    }
-
-    public DeployerTypesResolver getDeployerIaaSTypeResolver() {
-        try {
-            if (deployerTypesResolver == null) {
-                deployerTypesResolver = new DeployerTypesResolver(Resources
-                        .getResource(BROOKLYN_TYPES_MAPPING).toURI().toString());
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        return deployerTypesResolver;
-    }
-
-    public Yaml getYamlParser() {
-        DumperOptions options = new DumperOptions();
-        options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
-        return new Yaml(options);
     }
 
     public String generateDam(String adp) {
@@ -263,7 +247,9 @@ public class DamGenerator {
         groups.put(MONITOR_INFO_GROUPNAME, appGroup);
     }
 
+
     public Map<String, Object> translateAPD(Map<String, Object> adpYaml) {
+
         DeployerTypesResolver deployerTypesResolver = getDeployerIaaSTypeResolver();
         Map<String, Object> damUsedNodeTypes = new HashMap<>();
         Map<String, ArrayList<String>> groups = new HashMap<>();
@@ -272,8 +258,12 @@ public class DamGenerator {
         Map<String, Object> nodeTemplates = (Map<String, Object>) topologyTemplate.get(NODE_TEMPLATES);
         Map<String, Object> nodeTypes = (Map<String, Object>) adpYaml.get(NODE_TYPES);
 
+
         for (String moduleName : nodeTemplates.keySet()) {
+
+
             Map<String, Object> module = (Map<String, Object>) nodeTemplates.get(moduleName);
+            clearRequirements(module);
 
             ArrayList<Map<String, Object>> artifactsList = (ArrayList<Map<String, Object>>) module.get("artifacts");
             if (artifactsList != null) {
@@ -314,19 +304,12 @@ public class DamGenerator {
                 }
             }
 
-
-            if (module.keySet().contains(REQUIREMENTS)) {
-                List<Map<String, Object>> requirements = (ArrayList<Map<String, Object>>) module.get(REQUIREMENTS);
-                for (Map<String, Object> req : requirements) {
-                    if (req.keySet().contains(HOST)) {
-                        String host = (String) req.get(HOST);
-                        if (!groups.keySet().contains(host)) {
-                            groups.put(host, new ArrayList<String>());
-                        }
-                        groups.get(host).add(moduleName);
-                    }
-                    req.remove(INSTANCES_POC);
+            String hostNodeTemplateName = getHostTemplateName(module);
+            if (hostNodeTemplateName != null) {
+                if (!groups.keySet().contains(hostNodeTemplateName)) {
+                    groups.put(hostNodeTemplateName, new ArrayList<String>());
                 }
+                groups.get(hostNodeTemplateName).add(moduleName);
             }
         }
 
@@ -360,6 +343,41 @@ public class DamGenerator {
         return adpYaml;
     }
 
+
+    public List<Map<String, Object>> getRequirements(Map<String, Object> nodeTemplate) {
+        List<Map<String, Object>> requirements = ImmutableList.of();
+        if (nodeTemplate.keySet().contains(REQUIREMENTS)) {
+            requirements = (ArrayList<Map<String, Object>>) nodeTemplate.get(REQUIREMENTS);
+        }
+        return requirements;
+    }
+
+    public List<Map<String, Object>> clearRequirements(Map<String, Object> nodeTemplate) {
+        List<Map<String, Object>> requirements = getRequirements(nodeTemplate);
+        for (Map<String, Object> requirement : getRequirements(nodeTemplate)) {
+            requirement.remove(INSTANCES_POC);
+        }
+        return requirements;
+    }
+
+    public Map<String, Object> getHostRequirement(Map<String, Object> nodeTemplate) {
+        List<Map<String, Object>> requirements = getRequirements(nodeTemplate);
+        for (Map<String, Object> req : requirements) {
+            if (req.keySet().contains(HOST)) {
+                return req;
+            }
+        }
+        return null;
+    }
+
+    public String getHostTemplateName(Map<String, Object> nodeTemplateId) {
+        String result = null;
+        Map<String, Object> hostRequirement = getHostRequirement(nodeTemplateId);
+        if (hostRequirement != null) {
+            result = (String) hostRequirement.get(HOST);
+        }
+        return result;
+    }
 
     public URL getMonitoringEndpoint() {
         try {
@@ -694,6 +712,37 @@ public class DamGenerator {
             return new HttpHelper(slaEndpoint).getRequest(GET_AGREEMENT_OP, paremeters);
 
         }
+    }
+
+    public DeployerTypesResolver getDeployerIaaSTypeResolver() {
+        try {
+            if (deployerTypesResolver == null) {
+                deployerTypesResolver = new DeployerTypesResolver(Resources
+                        .getResource(BROOKLYN_IAAS_TYPES_MAPPING).toURI().toString());
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return deployerTypesResolver;
+    }
+
+    public DeployerTypesResolver getDeployerPaaSTypeResolver() {
+        try {
+            if (deployerTypesResolver == null) {
+                deployerTypesResolver = new DeployerTypesResolver(Resources
+                        .getResource(BROOKLYN_PAAS_TYPES_MAPPING).toURI().toString());
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return deployerTypesResolver;
+    }
+
+
+    public Yaml getYamlParser() {
+        DumperOptions options = new DumperOptions();
+        options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+        return new Yaml(options);
     }
 
 }
