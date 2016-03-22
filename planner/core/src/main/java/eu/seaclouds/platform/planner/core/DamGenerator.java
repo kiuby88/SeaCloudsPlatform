@@ -1,12 +1,29 @@
+/**
+ * Copyright 2014 SeaClouds
+ * Contact: SeaClouds
+ * <p/>
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * <p/>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p/>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package eu.seaclouds.platform.planner.core;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Resources;
 import eu.seaclouds.monitor.monitoringdamgenerator.MonitoringDamGenerator;
 import eu.seaclouds.monitor.monitoringdamgenerator.MonitoringInfo;
+import eu.seaclouds.platform.planner.core.facade.NodeTemplateFacade;
+import eu.seaclouds.platform.planner.core.resolver.DeployerTypesResolver;
 import it.polimi.tower4clouds.rules.MonitoringRules;
 import org.apache.brooklyn.util.collections.MutableList;
 import org.apache.brooklyn.util.collections.MutableMap;
@@ -32,28 +49,11 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
 
-/**
- * Copyright 2014 SeaClouds
- * Contact: SeaClouds
- * <p/>
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * <p/>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p/>
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 public class DamGenerator {
 
     static Logger log = LoggerFactory.getLogger(DamGenerator.class);
@@ -70,9 +70,6 @@ public class DamGenerator {
     public static final String CLOUD_FOUNDRY = "CloudFoundry";
     public static final String POLICIES = "policies";
     public static final String GROUPS = "groups";
-    public static final String HOST = "host";
-    public static final String INSTANCES_POC = "instancesPOC";
-    public static final String REQUIREMENTS = "requirements";
     public static final String MEMBERS = "members";
     public static final String ID = "id";
     public static final String APPLICATION = "application";
@@ -106,6 +103,10 @@ public class DamGenerator {
     public static final String SEACLOUDS_MANAGEMENT_POLICY =
             "eu.seaclouds.policy.SeaCloudsManagementPolicy";
 
+    public static final String REQUIREMENTS = "requirements";
+    public static final String INSTANCES_POC = "instancesPOC";
+    public static final String HOST = "host";
+
     private DeployerTypesResolver deployerTypesResolver;
 
     private Map<String, MonitoringInfo> monitoringInfoByApplication = new HashMap<>();
@@ -123,6 +124,7 @@ public class DamGenerator {
 
     private SlaAgreementManager agreementManager;
     private Map<String, Object> template;
+    private Map<String, NodeTemplateFacade> nodeTemplateFacades;
 
     private DamGenerator(Builder builder) {
         this.monitorUrl = builder.monitorUrl;
@@ -141,12 +143,14 @@ public class DamGenerator {
 
     private void init() {
         agreementManager = new SlaAgreementManager(slaEndpoint);
+        nodeTemplateFacades = MutableMap.of();
     }
 
     public String generateDam(String adp) {
         String applicationInfoId;
         Map<String, Object> adpYaml =
                 manageTemplateMetada((Map<String, Object>) getYamlParser().load(adp));
+        adpYaml = normalizeComputeTypes(adpYaml);
 
         template = translateAPD(adpYaml);
         MonitoringInfo monitoringInfo = generateMonitoringInfo();
@@ -167,10 +171,11 @@ public class DamGenerator {
         if (template.containsKey(NODE_TYPES)) {
             template.remove(NODE_TYPES);
         }
+    }
 
-        Map<String, Object> topologyTemplate = (Map<String, Object>) template.get(TOPOLOGY_TEMPLATE);
+    private Map<String, Object> normalizeComputeTypes(Map<String, Object> adpTemplate){
+        Map<String, Object> topologyTemplate = (Map<String, Object>) adpTemplate.get(TOPOLOGY_TEMPLATE);
         Map<String, Object> nodeTemplates = (Map<String, Object>) topologyTemplate.get(NODE_TEMPLATES);
-
         //Solve offerings Types issue
         for (Map.Entry<String, Object> nodeTemplateEntry : nodeTemplates.entrySet()) {
             Map<String, Object> nodeTemplate = (Map<String, Object>) nodeTemplateEntry.getValue();
@@ -179,6 +184,7 @@ public class DamGenerator {
                 nodeTemplate.put(TYPE, getDeployerIaaSTypeResolver().resolveNodeType("seaclouds.nodes.Compute"));
             }
         }
+        return adpTemplate;
     }
 
     @SuppressWarnings("unchecked")
@@ -260,38 +266,16 @@ public class DamGenerator {
 
 
         for (String moduleName : nodeTemplates.keySet()) {
-
-
             Map<String, Object> module = (Map<String, Object>) nodeTemplates.get(moduleName);
-            clearRequirements(module);
 
-            ArrayList<Map<String, Object>> artifactsList = (ArrayList<Map<String, Object>>) module.get("artifacts");
-            if (artifactsList != null) {
-                Map<String, Object> artifacts = artifactsList.get(0);
-                artifacts.remove("type");
+            NodeTemplateFacade nodeTemplateFacade = new NodeTemplateFacade(adpYaml, module);
+            nodeTemplateFacades.put(moduleName, nodeTemplateFacade);
 
-                Set<String> artifactKeys = artifacts.keySet();
-                if (artifactKeys.size() > 1) {
-                    throw new IllegalArgumentException();
-                }
 
-                String[] keys = artifactKeys.toArray(new String[1]);
-
-                Map<String, Object> properties = (Map<String, Object>) module.get("properties");
-                properties.put(keys[0], artifacts.get(keys[0]));
-
-                module.remove("artifacts");
-            }
-
-            //type replacement
-            String moduleType = (String) module.get("type");
-            if (nodeTypes.containsKey(moduleType)) {
-                Map<String, Object> type = (HashMap<String, Object>) nodeTypes.get(moduleType);
-                String sourceType = (String) type.get("derived_from");
-                String targetType = deployerTypesResolver.resolveNodeType(sourceType);
-
+            String moduleType = nodeTemplateFacade.getModuleType();
+            if(nodeTypes.containsKey(moduleType)){
+                String targetType = nodeTemplateFacade.getType();
                 if (targetType != null) {
-                    module.put("type", targetType);
                     if (deployerTypesResolver.getNodeTypeDefinition(targetType) != null) {
                         damUsedNodeTypes.put(targetType,
                                 deployerTypesResolver.getNodeTypeDefinition(targetType));
@@ -304,7 +288,9 @@ public class DamGenerator {
                 }
             }
 
-            String hostNodeTemplateName = getHostTemplateName(module);
+            nodeTemplates.put(moduleName, nodeTemplateFacade.transform());
+            String hostNodeTemplateName = nodeTemplateFacade.getHostNodeName();
+
             if (hostNodeTemplateName != null) {
                 if (!groups.keySet().contains(hostNodeTemplateName)) {
                     groups.put(hostNodeTemplateName, new ArrayList<String>());
@@ -343,40 +329,12 @@ public class DamGenerator {
         return adpYaml;
     }
 
-
     public List<Map<String, Object>> getRequirements(Map<String, Object> nodeTemplate) {
         List<Map<String, Object>> requirements = ImmutableList.of();
         if (nodeTemplate.keySet().contains(REQUIREMENTS)) {
             requirements = (ArrayList<Map<String, Object>>) nodeTemplate.get(REQUIREMENTS);
         }
         return requirements;
-    }
-
-    public List<Map<String, Object>> clearRequirements(Map<String, Object> nodeTemplate) {
-        List<Map<String, Object>> requirements = getRequirements(nodeTemplate);
-        for (Map<String, Object> requirement : getRequirements(nodeTemplate)) {
-            requirement.remove(INSTANCES_POC);
-        }
-        return requirements;
-    }
-
-    public Map<String, Object> getHostRequirement(Map<String, Object> nodeTemplate) {
-        List<Map<String, Object>> requirements = getRequirements(nodeTemplate);
-        for (Map<String, Object> req : requirements) {
-            if (req.keySet().contains(HOST)) {
-                return req;
-            }
-        }
-        return null;
-    }
-
-    public String getHostTemplateName(Map<String, Object> nodeTemplateId) {
-        String result = null;
-        Map<String, Object> hostRequirement = getHostRequirement(nodeTemplateId);
-        if (hostRequirement != null) {
-            result = (String) hostRequirement.get(HOST);
-        }
-        return result;
     }
 
     public URL getMonitoringEndpoint() {
@@ -399,7 +357,6 @@ public class DamGenerator {
         }
         return null;
     }
-
 
     public void addSeaCloudsPolicy(MonitoringInfo monitoringInfo,
                                    String applicationMonitorId) {

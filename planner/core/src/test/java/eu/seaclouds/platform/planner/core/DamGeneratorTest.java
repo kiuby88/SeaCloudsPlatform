@@ -1,5 +1,20 @@
+/**
+ * Copyright 2014 SeaClouds
+ * Contact: SeaClouds
+ * <p/>
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * <p/>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p/>
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package eu.seaclouds.platform.planner.core;
-
 
 import com.google.common.io.Resources;
 import org.apache.brooklyn.util.text.Strings;
@@ -25,22 +40,6 @@ import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
-/**
- * Copyright 2014 SeaClouds
- * Contact: SeaClouds
- * <p/>
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * <p/>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p/>
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 @SuppressWarnings("ALL")
 public class DamGeneratorTest {
 
@@ -79,7 +78,7 @@ public class DamGeneratorTest {
         yamlParser = new Yaml(options);
     }
 
-    private DamGenerator getDamGenerator(){
+    private DamGenerator getDamGenerator() {
         DamGenerator damGenerator = new DamGenerator.Builder()
                 .monitorUrl(MONITOR_URL)
                 .monitorPort(MONITOR_PORT)
@@ -96,18 +95,18 @@ public class DamGeneratorTest {
         return damGenerator;
     }
 
-    private static String getMonitorEndpoint(){
-        return "http://"+MONITOR_URL+":"+MONITOR_PORT;
+    private static String getMonitorEndpoint() {
+        return "http://" + MONITOR_URL + ":" + MONITOR_PORT;
     }
 
-    private static String getInfluxDbEndpoint(){
-        return "http://"+INFLUXDB_URL+":"+INFLUXDB_PORT;
+    private static String getInfluxDbEndpoint() {
+        return "http://" + INFLUXDB_URL + ":" + INFLUXDB_PORT;
     }
 
     @Test
     @SuppressWarnings("unchecked")
     public void testMetadataTemplate() throws Exception {
-        String adp = new Scanner(new File(Resources.getResource("generated_adp.yml").toURI())).useDelimiter("\\Z").next();
+        String adp = new Scanner(new File(Resources.getResource("nuro/nuro_adp.yml").toURI())).useDelimiter("\\Z").next();
 
         DamGenerator damGenerator = getDamGenerator();
         damGenerator.setAgreementManager(fakeAgreementManager);
@@ -132,7 +131,7 @@ public class DamGeneratorTest {
     @Test
     @SuppressWarnings("unchecked")
     public void testGroupsAsTopologyChild() throws Exception {
-        String adp = new Scanner(new File(Resources.getResource("generated_adp.yml").toURI())).useDelimiter("\\Z").next();
+        String adp = new Scanner(new File(Resources.getResource("nuro/nuro_adp.yml").toURI())).useDelimiter("\\Z").next();
 
         DamGenerator damGenerator = getDamGenerator();
         damGenerator.setAgreementManager(fakeAgreementManager);
@@ -148,13 +147,11 @@ public class DamGeneratorTest {
                 (Map<String, Object>) topologyTemplate.get(DamGenerator.GROUPS);
 
         assertNotNull(topologyGroups);
-        assertEquals(topologyGroups.size(), 9);
+        assertEquals(topologyGroups.size(), 7);
         assertTrue(topologyGroups.containsKey("operation_www"));
-        assertTrue(topologyGroups.containsKey("operation_webservices"));
-        assertTrue(topologyGroups.containsKey("operation_db1"));
-        assertTrue(topologyGroups.containsKey("add_brooklyn_location_Vultr_64gb_mc_atlanta"));
-        assertTrue(topologyGroups.containsKey("add_brooklyn_location_Rapidcloud_io_Asia_HK"));
-        assertTrue(topologyGroups.containsKey("add_brooklyn_location_App42_PaaS_America_US"));
+        assertTrue(topologyGroups.containsKey("operation_db"));
+        assertTrue(topologyGroups.containsKey("add_brooklyn_location_Amazon_EC2_m1_small_eu_central_1"));
+        assertTrue(topologyGroups.containsKey("add_brooklyn_location_Amazon_EC2_m4_10xlarge_eu_west_1"));
         assertTrue(topologyGroups.containsKey("monitoringInformation"));
         assertTrue(topologyGroups.containsKey("sla_gen_info"));
         testSeaCloudsPolicy(topologyGroups);
@@ -304,7 +301,7 @@ public class DamGeneratorTest {
     }
 
 
-    public void testSeaCloudsPolicy(Map<String, Object> groups){
+    public void testSeaCloudsPolicy(Map<String, Object> groups) {
         assertNotNull(groups);
         assertTrue(groups.containsKey(DamGenerator.SEACLOUDS_APPLICATION_CONFIGURATION));
         Map<String, Object> policyGroup = (Map<String, Object>) groups
@@ -312,11 +309,11 @@ public class DamGeneratorTest {
 
         assertTrue(policyGroup.containsKey(DamGenerator.MEMBERS));
         assertTrue(policyGroup.get(DamGenerator.MEMBERS) instanceof List);
-        assertTrue(((List)policyGroup.get(DamGenerator.MEMBERS)).isEmpty());
+        assertTrue(((List) policyGroup.get(DamGenerator.MEMBERS)).isEmpty());
 
         assertTrue(policyGroup.containsKey(DamGenerator.POLICIES));
         assertTrue(policyGroup.get(DamGenerator.POLICIES) instanceof List);
-        List<Object> policies = (List<Object>)policyGroup.get(DamGenerator.POLICIES);
+        List<Object> policies = (List<Object>) policyGroup.get(DamGenerator.POLICIES);
 
         assertEquals(policies.size(), 1);
         assertTrue(policies.get(0) instanceof Map);
