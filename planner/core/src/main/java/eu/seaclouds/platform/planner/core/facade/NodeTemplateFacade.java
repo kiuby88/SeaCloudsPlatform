@@ -57,7 +57,6 @@ public class NodeTemplateFacade {
     private List<Map<String, Object>> artifacts;
     private Map<String, Object> nodeTypes;
     private DeployerTypesResolver deployerTypesResolver;
-    private boolean iaasTarget;
 
     public NodeTemplateFacade(Map<String, Object> applicationTemplate,
                               Map<String, Object> nodeTemplate) {
@@ -84,7 +83,6 @@ public class NodeTemplateFacade {
         initArtifacts();
         initNodeTypes();
         initTypeResolver();
-        iaasTarget = moduleIsDeployedOnIaaS();
     }
 
     private void customize() {

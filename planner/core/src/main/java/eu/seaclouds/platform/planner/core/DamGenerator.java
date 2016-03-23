@@ -115,6 +115,7 @@ public class DamGenerator {
     private SlaAgreementManager agreementManager;
     private Map<String, Object> template;
     private Map<String, NodeTemplateFacade> nodeTemplateFacades;
+    private Map<String, Object> originalAdp;
 
     private DamGenerator(Builder builder) {
         this.monitorUrl = builder.monitorUrl;
@@ -138,6 +139,9 @@ public class DamGenerator {
 
     public String generateDam(String adp) {
         String applicationInfoId;
+        originalAdp =
+                normalizeComputeTypes((Map<String, Object>) getYamlParser().load(adp));
+
         Map<String, Object> adpYaml =
                 manageTemplateMetada((Map<String, Object>) getYamlParser().load(adp));
         adpYaml = normalizeComputeTypes(adpYaml);
@@ -265,7 +269,6 @@ public class DamGenerator {
 
     public Map<String, Object> translateAPD(Map<String, Object> adpYaml) {
 
-        DeployerTypesResolver deployerTypesResolver = getDeployerIaaSTypeResolver();
         Map<String, Object> damUsedNodeTypes = new HashMap<>();
         Map<String, ArrayList<String>> groups = new HashMap<>();
         Map<String, Object> ADPgroups = (Map<String, Object>) adpYaml.get(GROUPS);
@@ -277,9 +280,8 @@ public class DamGenerator {
         for (String moduleName : nodeTemplates.keySet()) {
             Map<String, Object> module = (Map<String, Object>) nodeTemplates.get(moduleName);
 
-            NodeTemplateFacade nodeTemplateFacade = new NodeTemplateFacade(adpYaml, module);
+            NodeTemplateFacade nodeTemplateFacade = new NodeTemplateFacade(originalAdp, module);
             nodeTemplateFacades.put(moduleName, nodeTemplateFacade);
-
 
             String moduleType = nodeTemplateFacade.getModuleType();
             if (nodeTypes.containsKey(moduleType)) {
