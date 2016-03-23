@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package eu.seaclouds.platform.planner.core;
+package eu.seaclouds.platform.planner.core.resolver;
 
 import com.google.common.io.Resources;
 import eu.seaclouds.platform.planner.core.resolver.DeployerTypesResolver;
@@ -99,5 +99,5 @@ public class DeployerTypesResolverTest {
         assertNull(typesResolver.resolvePolicyType("source.policyX"));
     }
 
-
 }
+

@@ -17,6 +17,7 @@
 package eu.seaclouds.platform.planner.core;
 
 import com.google.common.io.Resources;
+import eu.seaclouds.platform.planner.core.facade.policies.SeaCloudsManagementPolicyFacade;
 import org.apache.brooklyn.util.text.Strings;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -40,7 +41,6 @@ import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
-@SuppressWarnings("ALL")
 public class DamGeneratorTest {
 
     private static final String FAKE_AGREEMENT_ID = "agreement-1234567890";
@@ -319,24 +319,25 @@ public class DamGeneratorTest {
         assertTrue(policies.get(0) instanceof Map);
         Map<String, Object> seacloudsManagementPolicy = (Map<String, Object>) policies.get(0);
         assertEquals(seacloudsManagementPolicy.size(), 1);
-        assertTrue(seacloudsManagementPolicy.containsKey(DamGenerator.SEACLOUDS_APPLICATION_CONFIGURATION_POLICY));
+        assertTrue(seacloudsManagementPolicy.containsKey(SeaCloudsManagementPolicyFacade.SEACLOUDS_APPLICATION_CONFIGURATION_POLICY));
 
         Map<String, Object> seacloudsManagementPolicyProperties = (Map<String, Object>)
-                seacloudsManagementPolicy.get(DamGenerator.SEACLOUDS_APPLICATION_CONFIGURATION_POLICY);
+                seacloudsManagementPolicy.get(SeaCloudsManagementPolicyFacade.SEACLOUDS_APPLICATION_CONFIGURATION_POLICY);
         assertEquals(seacloudsManagementPolicyProperties.size(), 12);
 
         assertEquals(seacloudsManagementPolicyProperties.get(DamGenerator.TYPE),
-                DamGenerator.SEACLOUDS_MANAGEMENT_POLICY);
-        assertEquals(seacloudsManagementPolicyProperties.get("slaEndpoint"), SLA_ENDPOINT);
-        assertFalse(Strings.isBlank((String) seacloudsManagementPolicyProperties.get("slaAgreement")));
-        assertEquals(seacloudsManagementPolicyProperties.get("t4cEndpoint"), getMonitorEndpoint());
-        assertFalse(Strings.isBlank((String) seacloudsManagementPolicyProperties.get("t4cRules")));
-        assertEquals(seacloudsManagementPolicyProperties.get("influxdbEndpoint"), getInfluxDbEndpoint());
-        assertEquals(seacloudsManagementPolicyProperties.get("influxdbDatabase"), INFLUXDB_DATABASE);
-        assertEquals(seacloudsManagementPolicyProperties.get("influxdbUsername"), INFLUXDB_USERNAME);
-        assertEquals(seacloudsManagementPolicyProperties.get("influxdbPassword"), INFLUXDB_PASSWORD);
-        assertEquals(seacloudsManagementPolicyProperties.get("grafanaEndpoint"), GRAFANA_ENDPOINT);
-        assertEquals(seacloudsManagementPolicyProperties.get("grafanaUsername"), GRAFANA_USERNAME);
-        assertEquals(seacloudsManagementPolicyProperties.get("grafanaPassword"), GRAFANA_PASSWORD);
+                SeaCloudsManagementPolicyFacade.SEACLOUDS_MANAGEMENT_POLICY);
+        assertEquals(seacloudsManagementPolicyProperties.get(SeaCloudsManagementPolicyFacade.SLA_ENDPOINT), SLA_ENDPOINT);
+        assertFalse(Strings.isBlank((String) seacloudsManagementPolicyProperties.get(SeaCloudsManagementPolicyFacade.SLA_AGREEMENT)));
+        assertEquals(seacloudsManagementPolicyProperties.get(SeaCloudsManagementPolicyFacade.T4C_ENDPOINT), getMonitorEndpoint());
+        assertFalse(Strings.isBlank((String) seacloudsManagementPolicyProperties.get(SeaCloudsManagementPolicyFacade.T4C_RULES)));
+        assertEquals(seacloudsManagementPolicyProperties.get(SeaCloudsManagementPolicyFacade.INFLUXDB_ENDPOINT), getInfluxDbEndpoint());
+        assertEquals(seacloudsManagementPolicyProperties.get(SeaCloudsManagementPolicyFacade.INFLUXDB_DATABASE), INFLUXDB_DATABASE);
+        assertEquals(seacloudsManagementPolicyProperties.get(SeaCloudsManagementPolicyFacade.INFLUXDB_USERNAME), INFLUXDB_USERNAME);
+        assertEquals(seacloudsManagementPolicyProperties.get(SeaCloudsManagementPolicyFacade.INFLUXDB_PASSWORD), INFLUXDB_PASSWORD);
+        assertEquals(seacloudsManagementPolicyProperties.get(SeaCloudsManagementPolicyFacade.GRAFANA_ENDPOINT), GRAFANA_ENDPOINT);
+        assertEquals(seacloudsManagementPolicyProperties.get(SeaCloudsManagementPolicyFacade.GRAFANA_USERNAME), GRAFANA_USERNAME);
+        assertEquals(seacloudsManagementPolicyProperties.get(SeaCloudsManagementPolicyFacade.GRAFANA_PASSWORD), GRAFANA_PASSWORD);
     }
+
 }
