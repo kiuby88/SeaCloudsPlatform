@@ -24,14 +24,13 @@ import java.util.Map;
 public class NodeTemplateFactory {
 
     public static NodeTemplateFacade createNodeTemplate(Map<String, Object> applicationTemplate,
-                                                            Map<String, Object> nodeTemplate){
+                                                        Map<String, Object> nodeTemplate) {
 
         String nodeTemplateType = (String) nodeTemplate.get(NodeTemplateFacade.TYPE);
-        if(ComputeNodeTemplateFacade.isSupported(nodeTemplateType)){
+        if (ComputeNodeTemplateFacade.isSupported(nodeTemplateType)) {
             return new ComputeNodeTemplateFacade(applicationTemplate, nodeTemplate);
-        } else if(PlatformNodeTemplateFacade.isSupported(nodeTemplateType)){
+        } else if (PlatformNodeTemplateFacade.isSupported(nodeTemplateType)) {
             return new PlatformNodeTemplateFacade(applicationTemplate, nodeTemplate);
-
         } else {
             return new AbstractNodeTemplateFacade(applicationTemplate, nodeTemplate);
         }

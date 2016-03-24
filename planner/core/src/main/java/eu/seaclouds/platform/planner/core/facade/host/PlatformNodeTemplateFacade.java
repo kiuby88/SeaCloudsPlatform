@@ -17,6 +17,7 @@
 package eu.seaclouds.platform.planner.core.facade.host;
 
 import com.google.common.collect.ImmutableList;
+import org.apache.brooklyn.util.collections.MutableMap;
 
 import java.util.List;
 import java.util.Map;
@@ -39,4 +40,14 @@ public class PlatformNodeTemplateFacade extends AbstractHostNodeTemplate {
         return getModuleType();
     }
 
+    @Override
+    public Map<String, Object> getLocationPolicy() {
+        return createSimpleLocationPolicy();
+    }
+
+    private Map<String, Object> createSimpleLocationPolicy(){
+        Map<String, Object> locationPolicyDescription = MutableMap.of();
+        locationPolicyDescription.put(BROOKLYN_LOCATION, "cloudfoundry-instance");
+        return locationPolicyDescription;
+    }
 }

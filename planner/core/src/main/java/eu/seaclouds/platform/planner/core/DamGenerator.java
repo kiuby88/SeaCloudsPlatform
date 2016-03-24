@@ -17,13 +17,13 @@
 package eu.seaclouds.platform.planner.core;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Resources;
 import eu.seaclouds.monitor.monitoringdamgenerator.MonitoringDamGenerator;
 import eu.seaclouds.monitor.monitoringdamgenerator.MonitoringInfo;
 import eu.seaclouds.platform.planner.core.facade.NodeTemplateFacade;
 import eu.seaclouds.platform.planner.core.facade.NodeTemplateFactory;
+import eu.seaclouds.platform.planner.core.facade.host.HostNodeTemplateFacade;
 import eu.seaclouds.platform.planner.core.facade.policies.SeaCloudsManagementPolicyFacade;
 import eu.seaclouds.platform.planner.core.resolver.DeployerTypesResolver;
 import org.apache.brooklyn.util.collections.MutableList;
@@ -58,10 +58,7 @@ public class DamGenerator {
     private static final String MONITOR_INFO_GROUPNAME = "monitoringInformation";
 
     public static final String ADD_BROOKLYN_LOCATION = "add_brooklyn_location_";
-    public static final String BROOKLYN_LOCATION = "brooklyn.location";
-    public static final String LOCATION = "location";
-    public static final String REGION = "region";
-    public static final String HARDWARE_ID = "hardwareId";
+
     public static final String TYPE = "type";
     public static final String CLOUD_FOUNDRY = "CloudFoundry";
     public static final String POLICIES = "policies";
@@ -117,6 +114,8 @@ public class DamGenerator {
     private Map<String, Object> template;
     private Map<String, NodeTemplateFacade> nodeTemplateFacades;
     private Map<String, Object> originalAdp;
+    private Map<String, ArrayList<String>> topologyTree;
+    private Map<String, HostNodeTemplateFacade> hostNodeTemplateFacades;
 
     private DamGenerator(Builder builder) {
         this.monitorUrl = builder.monitorUrl;
@@ -136,6 +135,8 @@ public class DamGenerator {
     private void init() {
         agreementManager = new SlaAgreementManager(slaEndpoint);
         nodeTemplateFacades = MutableMap.of();
+        topologyTree = MutableMap.of();
+        hostNodeTemplateFacades = MutableMap.of();
     }
 
     public String generateDam(String adp) {
@@ -270,8 +271,8 @@ public class DamGenerator {
 
     public Map<String, Object> translateAPD(Map<String, Object> adpYaml) {
 
-        Map<String, Object> damUsedNodeTypes = new HashMap<>();
-        Map<String, ArrayList<String>> groups = new HashMap<>();
+        Map<String, Object> damUsedNodeTypes = MutableMap.of();
+
         Map<String, Object> ADPgroups = (Map<String, Object>) adpYaml.get(GROUPS);
         Map<String, Object> topologyTemplate = (Map<String, Object>) adpYaml.get(TOPOLOGY_TEMPLATE);
         Map<String, Object> nodeTemplates = (Map<String, Object>) topologyTemplate.get(NODE_TEMPLATES);
@@ -302,51 +303,35 @@ public class DamGenerator {
 
             nodeTemplates.put(moduleName, nodeTemplateFacade.transform());
 
-            String hostNodeTemplateName = nodeTemplateFacade.getHostNodeName();
-            if (hostNodeTemplateName != null) {
-                if (!groups.keySet().contains(hostNodeTemplateName)) {
-                    groups.put(hostNodeTemplateName, new ArrayList<String>());
+            if(nodeTemplateFacade instanceof HostNodeTemplateFacade){
+                hostNodeTemplateFacades
+                        .put(moduleName, (HostNodeTemplateFacade) nodeTemplateFacade);
+            } else {
+                String hostNodeTemplateName = nodeTemplateFacade.getHostNodeName();
+                if (!topologyTree.containsKey(hostNodeTemplateName)) {
+                    topologyTree.put(hostNodeTemplateName, new ArrayList<String>());
                 }
-                groups.get(hostNodeTemplateName).add(moduleName);
+                topologyTree.get(hostNodeTemplateName).add(moduleName);
             }
         }
 
         adpYaml.put(NODE_TYPES, damUsedNodeTypes);
 
         //get brookly location from host
-        for (String group : groups.keySet()) {
+        for (String hostTemplate : topologyTree.keySet()) {
             HashMap<String, Object> policyGroup = new HashMap<>();
-            policyGroup.put(MEMBERS, Arrays.asList(group));
+            policyGroup.put(MEMBERS, Arrays.asList(hostTemplate));
 
-            HashMap<String, Object> cloudOffering = (HashMap<String, Object>) nodeTemplates.get(group);
-            HashMap<String, Object> properties = (HashMap<String, Object>) cloudOffering.get(PROPERTIES);
+            HostNodeTemplateFacade hostNodeTemplateFacade =
+                    hostNodeTemplateFacades.get(hostTemplate);
 
-            String location = (String) properties.get(LOCATION);
-            String region = (String) properties.get(REGION);
-            String hardwareId = (String) properties.get(HARDWARE_ID);
+            ArrayList<Map<String, Object>> policies = new ArrayList<>();
+            policies.add(hostNodeTemplateFacade.getLocationPolicy());
+            policyGroup.put(POLICIES, policies);
 
-            ArrayList<HashMap<String, Object>> policy = new ArrayList<>();
-            HashMap<String, Object> p = new HashMap<>();
-            if (location != null) {
-                p.put(BROOKLYN_LOCATION, location + (location.equals(CLOUD_FOUNDRY) ? "" : ":" + region));
-            } else {
-                p.put(BROOKLYN_LOCATION, group);
-            }
-            policy.add(p);
-
-            policyGroup.put(POLICIES, policy);
-
-            ADPgroups.put(ADD_BROOKLYN_LOCATION + group, policyGroup);
+            ADPgroups.put(ADD_BROOKLYN_LOCATION + hostTemplate, policyGroup);
         }
         return adpYaml;
-    }
-
-    public List<Map<String, Object>> getRequirements(Map<String, Object> nodeTemplate) {
-        List<Map<String, Object>> requirements = ImmutableList.of();
-        if (nodeTemplate.keySet().contains(REQUIREMENTS)) {
-            requirements = (ArrayList<Map<String, Object>>) nodeTemplate.get(REQUIREMENTS);
-        }
-        return requirements;
     }
 
     public URL getMonitoringEndpoint() {

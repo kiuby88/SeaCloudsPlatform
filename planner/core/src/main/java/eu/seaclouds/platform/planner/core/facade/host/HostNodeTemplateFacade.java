@@ -16,5 +16,12 @@
  */
 package eu.seaclouds.platform.planner.core.facade.host;
 
+import java.util.Map;
+
 public interface HostNodeTemplateFacade {
+
+    public static final String BROOKLYN_LOCATION = "brooklyn.location";
+
+    //TODO: should be connected with policies facades
+    public Map<String, Object> getLocationPolicy();
 }

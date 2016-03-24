@@ -56,6 +56,7 @@ public class AbstractNodeTemplateFacade implements NodeTemplateFacade {
     private List<Map<String, Object>> artifacts;
     private Map<String, Object> nodeTypes;
     private DeployerTypesResolver deployerTypesResolver;
+    private Map<String, Object> properties;
 
     public AbstractNodeTemplateFacade(Map<String, Object> applicationTemplate,
                                       Map<String, Object> nodeTemplate) {
@@ -82,6 +83,7 @@ public class AbstractNodeTemplateFacade implements NodeTemplateFacade {
         initArtifacts();
         initNodeTypes();
         initTypeResolver();
+        initProperties();
     }
 
     private void customize() {
@@ -109,6 +111,13 @@ public class AbstractNodeTemplateFacade implements NodeTemplateFacade {
         return artifacts;
     }
 
+    private Map<String, Object> initProperties() {
+        properties = MutableMap.of();
+        if (module.containsKey(PROPERTIES)) {
+            properties = (Map<String, Object>) module.get(PROPERTIES);
+        }
+        return properties;
+    }
 
     public List<Map<String, Object>> customizeRequirements() {
         for (Map<String, Object> requirement : requirements) {
@@ -173,7 +182,7 @@ public class AbstractNodeTemplateFacade implements NodeTemplateFacade {
         getProperties().put(propertyName, propertyValue);
     }
 
-    private Map<String, Object> getProperties() {
+    protected Map<String, Object> getProperties() {
         return (Map<String, Object>) module.get(PROPERTIES);
     }
 
@@ -250,7 +259,7 @@ public class AbstractNodeTemplateFacade implements NodeTemplateFacade {
         return (Map<String, Object>) deployerTypesResolver.getNodeTypeDefinition(getType());
     }
 
-    protected DeployerTypesResolver getDeployerTypesResolver(){
+    protected DeployerTypesResolver getDeployerTypesResolver() {
         return deployerTypesResolver;
     }
 

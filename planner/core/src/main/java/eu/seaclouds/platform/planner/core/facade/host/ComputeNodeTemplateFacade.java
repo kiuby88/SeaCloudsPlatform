@@ -17,12 +17,17 @@
 package eu.seaclouds.platform.planner.core.facade.host;
 
 import com.google.common.collect.ImmutableList;
-import eu.seaclouds.platform.planner.core.facade.host.AbstractHostNodeTemplate;
+import org.apache.brooklyn.util.collections.MutableMap;
 
 import java.util.List;
 import java.util.Map;
 
 public class ComputeNodeTemplateFacade extends AbstractHostNodeTemplate {
+
+    public static final String JCLOUDS = "jclouds";
+    public static final String LOCATION = "location";
+    public static final String REGION = "region";
+    public static final String HARDWARE_ID = "hardwareId";
 
     private static final List<String> SUPPORTED_TYPES =
             ImmutableList.of("tosca.nodes.Compute", "seaclouds.nodes.Compute");
@@ -38,5 +43,46 @@ public class ComputeNodeTemplateFacade extends AbstractHostNodeTemplate {
     @Override
     public String getType() {
         return getDeployerTypesResolver().resolveNodeType(getModuleType());
+    }
+
+    @Override
+    public Map<String, Object> getLocationPolicy() {
+        return createSimpleLocationPolicy();
+    }
+
+    private Map<String, Object> createLocationPolicy() {
+        Map<String, Object> locationPolicyDescription = MutableMap.of();
+        locationPolicyDescription.put(BROOKLYN_LOCATION, createLocationDescription());
+        return locationPolicyDescription;
+    }
+
+    private Map<String, Object> createLocationDescription() {
+        Map<String, Object> locationDescription = MutableMap.of();
+        Map<String, Object> properties = getProperties();
+        String location = (String) properties.get(LOCATION);
+
+        locationDescription.put(JCLOUDS + ":" + location, createLocationConfigration());
+        return locationDescription;
+    }
+
+    private Map<String, Object> createLocationConfigration() {
+        Map<String, Object> locationProperties = MutableMap.of();
+        Map<String, Object> properties = getProperties();
+        String region = (String) properties.get(REGION);
+        String hardwareId = (String) properties.get(HARDWARE_ID);
+
+        locationProperties.put(REGION, region);
+        locationProperties.put(HARDWARE_ID, hardwareId);
+        return locationProperties;
+    }
+
+    private Map<String, Object> createSimpleLocationPolicy() {
+        Map<String, Object> locationPolicyDescription = MutableMap.of();
+        Map<String, Object> properties = getProperties();
+        String location = (String) properties.get(LOCATION);
+        String region = (String) properties.get(REGION);
+
+        locationPolicyDescription.put(BROOKLYN_LOCATION, location + ":" + region);
+        return locationPolicyDescription;
     }
 }

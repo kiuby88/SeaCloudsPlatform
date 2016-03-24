@@ -20,7 +20,8 @@ import eu.seaclouds.platform.planner.core.facade.AbstractNodeTemplateFacade;
 
 import java.util.Map;
 
-public class AbstractHostNodeTemplate extends AbstractNodeTemplateFacade {
+public abstract class AbstractHostNodeTemplate extends AbstractNodeTemplateFacade
+        implements HostNodeTemplateFacade {
 
     public AbstractHostNodeTemplate(Map<String, Object> applicationTemplate, Map<String, Object> nodeTemplate) {
         super(applicationTemplate, nodeTemplate);
