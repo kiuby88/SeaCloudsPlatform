@@ -195,7 +195,7 @@ public class DamGenerator {
             Map<String, Object> nodeTemplate = (Map<String, Object>) nodeTemplateEntry.getValue();
             String nodeTemplateType = (String) nodeTemplate.get(TYPE);
             if (nodeTemplateType.contains("seaclouds.nodes.Compute")) {
-                nodeTemplate.put(TYPE, getDeployerIaaSTypeResolver().resolveNodeType("seaclouds.nodes.Compute"));
+                nodeTemplate.put(TYPE, "seaclouds.nodes.Compute");
             }
         }
         return adpTemplate;

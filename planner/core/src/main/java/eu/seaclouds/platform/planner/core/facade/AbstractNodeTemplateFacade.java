@@ -249,4 +249,8 @@ public class AbstractNodeTemplateFacade implements NodeTemplateFacade {
         return (Map<String, Object>) deployerTypesResolver.getNodeTypeDefinition(getType());
     }
 
+    protected DeployerTypesResolver getDeployerTypesResolver(){
+        return deployerTypesResolver;
+    }
+
 }

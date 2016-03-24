@@ -34,5 +34,9 @@ public class PlatformNodeTemplateFacade extends AbstractHostNodeTemplate {
         return SUPPORTED_TYPES.contains(type);
     }
 
+    @Override
+    public String getType() {
+        return getModuleType();
+    }
 
 }

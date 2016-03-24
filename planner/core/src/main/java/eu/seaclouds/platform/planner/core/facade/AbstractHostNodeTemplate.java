@@ -24,8 +24,5 @@ public class AbstractHostNodeTemplate extends AbstractNodeTemplateFacade {
         super(applicationTemplate, nodeTemplate);
     }
 
-    @Override
-    public String getType() {
-        return getModuleType();
-    }
+
 }

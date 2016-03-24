@@ -21,7 +21,7 @@ import com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.Map;
 
-public class ComputeNodeTemplateFacade extends AbstractNodeTemplateFacade implements NodeTemplateFacade {
+public class ComputeNodeTemplateFacade extends AbstractHostNodeTemplate {
 
     private static final List<String> SUPPORTED_TYPES =
             ImmutableList.of("tosca.nodes.Compute", "seaclouds.nodes.Compute");
@@ -32,5 +32,10 @@ public class ComputeNodeTemplateFacade extends AbstractNodeTemplateFacade implem
 
     public static boolean isSupported(String type) {
         return SUPPORTED_TYPES.contains(type);
+    }
+
+    @Override
+    public String getType() {
+        return getDeployerTypesResolver().resolveNodeType(getModuleType());
     }
 }
