@@ -16,20 +16,23 @@
  */
 package eu.seaclouds.platform.planner.core.facade;
 
+import com.google.common.collect.ImmutableList;
+
+import java.util.List;
 import java.util.Map;
 
-public interface NodeTemplateFacade {
+public class PlatformNodeTemplateFacade extends AbstractHostNodeTemplate {
 
-    public static final String TYPE = "type";
+    private static final List<String> SUPPORTED_TYPES =
+            ImmutableList.of("seaclouds.nodes.Platform.Cloud_Foundry");
 
-    public Map<String, Object> transform();
+    public PlatformNodeTemplateFacade(Map<String, Object> applicationTemplate, Map<String, Object> nodeTemplate) {
+        super(applicationTemplate, nodeTemplate);
+    }
 
-    public Map<String, Object> getNodeTypeDefinition();
+    public static boolean isSupported(String type) {
+        return SUPPORTED_TYPES.contains(type);
+    }
 
-    public String getModuleType();
-
-    public String getType();
-
-    public String getHostNodeName();
 
 }

@@ -340,4 +340,45 @@ public class DamGeneratorTest {
         assertEquals(seacloudsManagementPolicyProperties.get(SeaCloudsManagementPolicyFacade.GRAFANA_PASSWORD), GRAFANA_PASSWORD);
     }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testHH() throws Exception {
+        String adp = new Scanner(new File(Resources.getResource("j/cf-db.yml").toURI())).useDelimiter("\\Z").next();
+
+        DamGenerator damGenerator = getDamGenerator();
+        damGenerator.setAgreementManager(fakeAgreementManager);
+        dam = damGenerator.generateDam(adp);
+        template = (Map<String, Object>) yamlParser.load(dam);
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }

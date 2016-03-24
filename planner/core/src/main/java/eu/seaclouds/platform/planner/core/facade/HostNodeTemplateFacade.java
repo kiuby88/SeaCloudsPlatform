@@ -16,20 +16,5 @@
  */
 package eu.seaclouds.platform.planner.core.facade;
 
-import java.util.Map;
-
-public interface NodeTemplateFacade {
-
-    public static final String TYPE = "type";
-
-    public Map<String, Object> transform();
-
-    public Map<String, Object> getNodeTypeDefinition();
-
-    public String getModuleType();
-
-    public String getType();
-
-    public String getHostNodeName();
-
+public interface HostNodeTemplateFacade {
 }

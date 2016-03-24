@@ -1,0 +1,149 @@
+tosca_definitions_version: tosca_simple_yaml_1_0_0_wd03
+description: app1234
+imports:
+- tosca-normative-types:1.0.0.wd06-SNAPSHOT
+topology_template:
+  node_templates:
+    db:
+      type: sc_req.db
+      properties:
+        db_name: dbname
+        db_user: user
+        db_password: pss
+        autoscale: false
+        mysql_version:
+          constraints:
+          - greater_or_equal: '5'
+          - less_or_equal: '5.6'
+      artifacts:
+      - creationScriptUrl: http://script.sql
+        type: tosca.artifacts.File
+      requirements:
+      - host: Amazon_EC2_t1_micro_sa_east_1
+        instancesPOC: 3
+    web:
+      type: sc_req.web
+      properties:
+        language: JAVA
+        autoscale: false
+      artifacts:
+      - wars.root: http://webserver.war
+        type: tosca.artifacts.File
+      requirements:
+      - endpoint: db
+        type: seaclouds.relations.databaseconnections.jdbc
+        properties:
+          prop.name: conurl
+      - host: Cloud_Foundry
+        instancesPOC: 2
+    Amazon_EC2_t1_micro_sa_east_1:
+      type: seaclouds.nodes.Compute.Amazon_EC2
+      properties:
+        num_cpus: 1
+        country: Brazil
+        cost: 0.025
+        hardwareId: t1.micro
+        city: SAO PAULO
+        resource_type: compute
+        location: aws-ec2
+        availability: 0.9995
+        region: sa-east-1
+        ram: 0.61
+        performance: 60
+    Cloud_Foundry:
+      type: seaclouds.nodes.Platform.Cloud_Foundry
+      properties:
+        node_support: true
+        go_support: true
+        tomcat_version: 7
+        private_hosting: true
+        resource_type: platform
+        tomcat_support: true
+        auto_scaling: false
+        public_hosting: false
+        java_support: true
+        horizontal_scaling: true
+        ruby_support: true
+        python_support: true
+        scala_support: true
+        vertical_scaling: true
+        location: cloudfoundry-instance
+        go_version: 1.4
+        php_support: true
+        performance: 192
+        availability: 0.99871
+        cost: 0.04
+node_types:
+  sc_req.db:
+    derived_from: seaclouds.nodes.database.mysql.MySqlNode
+    properties:
+      resource_type:
+        constraints:
+        - equal: compute
+  sc_req.web:
+    derived_from: seaclouds.nodes.webapp.tomcat.TomcatServer
+    properties:
+      java_support:
+        constraints:
+        - equal: true
+      tomcat_support:
+        constraints:
+        - equal: true
+      java_version:
+        constraints:
+        - greater_or_equal: '4'
+        - less_or_equal: '4'
+      resource_type:
+        constraints:
+        - equal: platform
+  seaclouds.nodes.Compute:
+    derived_from: tosca.nodes.Compute
+    description: Custom compute
+    properties:
+      hardwareId:
+        required: false
+        type: string
+groups:
+  operation_db:
+    members:
+    - db
+    policies:
+    - dependencies: {}
+    - QoSRequirements: {}
+    - autoscaling:
+        autoscaler.resizeDownStabilizationDelay: 120000
+        maxPoolSize: 53
+        metric: seaclouds.metrics.requestPerNode
+        minPoolSize: 1
+        metricUpperBound: .inf
+        type: seaclouds.policies.autoscaling.AutoScalerPolicy
+        metricLowerBound: .inf
+  operation_web:
+    members:
+    - web
+    policies:
+    - dependencies:
+        operation_db: '3'
+    - AppQoSRequirements:
+        response_time:
+          less_than: 200.0 ms
+        availability:
+          greater_than: 0.9990000000000001
+        cost:
+          less_or_equal: 1000.0 euros_per_month
+        workload:
+          less_or_equal: 24000.0 req_per_min
+    - QoSRequirements: {}
+    - ExpectedQualityPOC:
+        expectedAvailabilityPOC: 0.9999983357750002
+        fitnessPOC: 48.96057347670251
+        expectedCostPOC: 111.60000000000002
+        expectedExecutionTimePOC: 0.2
+    - autoscaling:
+        autoscaler.resizeDownStabilizationDelay: 120000
+        maxPoolSize: 2
+        metric: seaclouds.metrics.requestPerNode
+        minPoolSize: 1
+        metricUpperBound: 200.0
+        type: seaclouds.policies.autoscaling.AutoScalerPolicy
+        metricLowerBound: 100.0

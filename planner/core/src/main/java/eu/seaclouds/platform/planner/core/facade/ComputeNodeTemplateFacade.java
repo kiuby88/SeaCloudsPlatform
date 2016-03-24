@@ -16,20 +16,21 @@
  */
 package eu.seaclouds.platform.planner.core.facade;
 
+import com.google.common.collect.ImmutableList;
+
+import java.util.List;
 import java.util.Map;
 
-public interface NodeTemplateFacade {
+public class ComputeNodeTemplateFacade extends AbstractNodeTemplateFacade implements NodeTemplateFacade {
 
-    public static final String TYPE = "type";
+    private static final List<String> SUPPORTED_TYPES =
+            ImmutableList.of("tosca.nodes.Compute", "seaclouds.nodes.Compute");
 
-    public Map<String, Object> transform();
+    public ComputeNodeTemplateFacade(Map<String, Object> applicationTemplate, Map<String, Object> nodeTemplate) {
+        super(applicationTemplate, nodeTemplate);
+    }
 
-    public Map<String, Object> getNodeTypeDefinition();
-
-    public String getModuleType();
-
-    public String getType();
-
-    public String getHostNodeName();
-
+    public static boolean isSupported(String type) {
+        return SUPPORTED_TYPES.contains(type);
+    }
 }

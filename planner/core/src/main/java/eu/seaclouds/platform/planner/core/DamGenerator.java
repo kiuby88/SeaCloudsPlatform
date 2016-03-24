@@ -23,6 +23,7 @@ import com.google.common.io.Resources;
 import eu.seaclouds.monitor.monitoringdamgenerator.MonitoringDamGenerator;
 import eu.seaclouds.monitor.monitoringdamgenerator.MonitoringInfo;
 import eu.seaclouds.platform.planner.core.facade.NodeTemplateFacade;
+import eu.seaclouds.platform.planner.core.facade.NodeTemplateFactory;
 import eu.seaclouds.platform.planner.core.facade.policies.SeaCloudsManagementPolicyFacade;
 import eu.seaclouds.platform.planner.core.resolver.DeployerTypesResolver;
 import org.apache.brooklyn.util.collections.MutableList;
@@ -164,17 +165,17 @@ public class DamGenerator {
     private void addSeaCloudsPolicy(MonitoringInfo monitoringInfo, String applicationInfoId) {
         SeaCloudsManagementPolicyFacade policyFacade =
                 new SeaCloudsManagementPolicyFacade.Builder()
-                .agreementManager(agreementManager)
-                .slaEndpoint(slaEndpoint)
-                .t4cEndpoint(getMonitoringEndpoint().toString())
-                .influxdbEndpoint(getInfluxDbEndpoint().toString())
-                .influxdbDatabase(influxdbDatabase)
-                .influxdbUsername(influxdbUsername)
-                .influxdbPassword(influxdbPassword)
-                .grafanaEndpoint(grafanaEndpoint)
-                .grafanaUsername(grafanaUsername)
-                .grafanaPassword(grafanaPassword)
-                .build();
+                        .agreementManager(agreementManager)
+                        .slaEndpoint(slaEndpoint)
+                        .t4cEndpoint(getMonitoringEndpoint().toString())
+                        .influxdbEndpoint(getInfluxDbEndpoint().toString())
+                        .influxdbDatabase(influxdbDatabase)
+                        .influxdbUsername(influxdbUsername)
+                        .influxdbPassword(influxdbPassword)
+                        .grafanaEndpoint(grafanaEndpoint)
+                        .grafanaUsername(grafanaUsername)
+                        .grafanaPassword(grafanaPassword)
+                        .build();
         Map<String, Object> groups = (Map<String, Object>) template.get(GROUPS);
         groups.put(SEACLOUDS_APPLICATION_CONFIGURATION,
                 policyFacade.getPolicy(monitoringInfo, applicationInfoId));
@@ -276,20 +277,20 @@ public class DamGenerator {
         Map<String, Object> nodeTemplates = (Map<String, Object>) topologyTemplate.get(NODE_TEMPLATES);
         Map<String, Object> nodeTypes = (Map<String, Object>) adpYaml.get(NODE_TYPES);
 
-
         for (String moduleName : nodeTemplates.keySet()) {
             Map<String, Object> module = (Map<String, Object>) nodeTemplates.get(moduleName);
 
-            NodeTemplateFacade nodeTemplateFacade = new NodeTemplateFacade(originalAdp, module);
+            NodeTemplateFacade nodeTemplateFacade =
+                    NodeTemplateFactory.createNodeTemplate(originalAdp, module);
             nodeTemplateFacades.put(moduleName, nodeTemplateFacade);
 
             String moduleType = nodeTemplateFacade.getModuleType();
             if (nodeTypes.containsKey(moduleType)) {
                 String targetType = nodeTemplateFacade.getType();
                 if (targetType != null) {
-                    if (deployerTypesResolver.getNodeTypeDefinition(targetType) != null) {
+                    if (nodeTemplateFacade.getNodeTypeDefinition() != null) {
                         damUsedNodeTypes.put(targetType,
-                                deployerTypesResolver.getNodeTypeDefinition(targetType));
+                                nodeTemplateFacade.getNodeTypeDefinition());
                     } else {
                         log.error("TargetType definition " + targetType + "was not found" +
                                 "so it will not added to DAM");
@@ -300,8 +301,8 @@ public class DamGenerator {
             }
 
             nodeTemplates.put(moduleName, nodeTemplateFacade.transform());
-            String hostNodeTemplateName = nodeTemplateFacade.getHostNodeName();
 
+            String hostNodeTemplateName = nodeTemplateFacade.getHostNodeName();
             if (hostNodeTemplateName != null) {
                 if (!groups.keySet().contains(hostNodeTemplateName)) {
                     groups.put(hostNodeTemplateName, new ArrayList<String>());

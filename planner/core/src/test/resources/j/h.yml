@@ -1,0 +1,83 @@
+tosca_definitions_version: tosca_simple_yaml_1_0_0_wd03
+description: qwert
+imports:
+- tosca-normative-types:1.0.0.wd06-SNAPSHOT
+topology_template:
+  node_templates:
+    db:
+      type: sc_req.db
+      properties:
+        db_name: ''
+        db_user: ''
+        db_password: ''
+        autoscale: false
+        mysql_version:
+          constraints:
+          - greater_or_equal: '5'
+          - less_or_equal: '5.6'
+      artifacts:
+      - creationScriptUrl: script.sql
+        type: tosca.artifacts.File
+      requirements:
+      - host: Amazon_EC2_t2_micro_ap_southeast_1
+        instancesPOC: 3
+    Amazon_EC2_t2_micro_ap_southeast_1:
+      type: seaclouds.nodes.Compute.Amazon_EC2
+      properties:
+        num_cpus: 1
+        country: Singapore
+        performance: 40
+        cost: 0.018
+        hardwareId: t2.micro
+        city: SINGAPORE
+        resource_type: compute
+        location: aws-ec2
+        availability: 0.9995
+        region: ap-southeast-1
+        ram: 1
+node_types:
+  sc_req.db:
+    derived_from: seaclouds.nodes.database.mysql.MySqlNode
+    properties:
+      mysql_support:
+        constraints:
+        - equal: true
+      mysql_version:
+        constraints:
+        - greater_or_equal: '5'
+        - less_or_equal: '5.6'
+  seaclouds.nodes.Compute:
+    derived_from: tosca.nodes.Compute
+    description: Custom compute
+    properties:
+      hardwareId:
+        required: false
+        type: string
+groups:
+  operation_db:
+    members:
+    - db
+    policies:
+    - dependencies: {}
+    - AppQoSRequirements:
+        response_time:
+          less_than: 200.0 ms
+        availability:
+          greater_than: 0.9990000000000001
+        cost:
+          less_or_equal: 1000.0 euros_per_month
+        workload:
+          less_or_equal: 24000.0 req_per_min
+    - QoSRequirements: {}
+    - ExpectedQualityPOC:
+        expectedAvailabilityPOC: 0.999999999875
+        fitnessPOC: 60.0
+        expectedCostPOC: 38.879999999999995
+    - autoscaling:
+        autoscaler.resizeDownStabilizationDelay: 120000
+        maxPoolSize: 78
+        metric: seaclouds.metrics.requestPerNode
+        minPoolSize: 1
+        metricUpperBound: .inf
+        type: seaclouds.policies.autoscaling.AutoScalerPolicy
+        metricLowerBound: .inf

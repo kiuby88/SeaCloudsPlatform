@@ -18,18 +18,14 @@ package eu.seaclouds.platform.planner.core.facade;
 
 import java.util.Map;
 
-public interface NodeTemplateFacade {
+public class AbstractHostNodeTemplate extends AbstractNodeTemplateFacade {
 
-    public static final String TYPE = "type";
+    public AbstractHostNodeTemplate(Map<String, Object> applicationTemplate, Map<String, Object> nodeTemplate) {
+        super(applicationTemplate, nodeTemplate);
+    }
 
-    public Map<String, Object> transform();
-
-    public Map<String, Object> getNodeTypeDefinition();
-
-    public String getModuleType();
-
-    public String getType();
-
-    public String getHostNodeName();
-
+    @Override
+    public String getType() {
+        return getModuleType();
+    }
 }
