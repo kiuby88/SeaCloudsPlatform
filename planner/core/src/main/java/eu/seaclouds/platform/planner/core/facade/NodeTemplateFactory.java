@@ -16,6 +16,9 @@
  */
 package eu.seaclouds.platform.planner.core.facade;
 
+import eu.seaclouds.platform.planner.core.facade.host.ComputeNodeTemplateFacade;
+import eu.seaclouds.platform.planner.core.facade.host.PlatformNodeTemplateFacade;
+
 import java.util.Map;
 
 public class NodeTemplateFactory {

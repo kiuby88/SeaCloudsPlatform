@@ -14,7 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package eu.seaclouds.platform.planner.core.facade;
+package eu.seaclouds.platform.planner.core.facade.host;
 
-public interface HostNodeTemplateFacade {
+import eu.seaclouds.platform.planner.core.facade.AbstractNodeTemplateFacade;
+
+import java.util.Map;
+
+public class AbstractHostNodeTemplate extends AbstractNodeTemplateFacade {
+
+    public AbstractHostNodeTemplate(Map<String, Object> applicationTemplate, Map<String, Object> nodeTemplate) {
+        super(applicationTemplate, nodeTemplate);
+    }
+
+
 }

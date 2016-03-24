@@ -14,9 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package eu.seaclouds.platform.planner.core.facade;
+package eu.seaclouds.platform.planner.core.facade.host;
 
 import com.google.common.collect.ImmutableList;
+import eu.seaclouds.platform.planner.core.facade.host.AbstractHostNodeTemplate;
 
 import java.util.List;
 import java.util.Map;

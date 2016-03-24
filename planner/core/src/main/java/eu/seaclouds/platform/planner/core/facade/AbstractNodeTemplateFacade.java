@@ -18,6 +18,7 @@ package eu.seaclouds.platform.planner.core.facade;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Resources;
+import eu.seaclouds.platform.planner.core.facade.host.ComputeNodeTemplateFacade;
 import eu.seaclouds.platform.planner.core.resolver.DeployerTypesResolver;
 import org.apache.brooklyn.util.collections.MutableMap;
 import org.slf4j.Logger;
