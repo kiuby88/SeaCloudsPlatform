@@ -27,8 +27,8 @@ public class PlatformNodeTemplateFacade extends AbstractHostNodeTemplate {
     private static final List<String> SUPPORTED_TYPES =
             ImmutableList.of("seaclouds.nodes.Platform.Cloud_Foundry");
 
-    public PlatformNodeTemplateFacade(Map<String, Object> applicationTemplate, Map<String, Object> nodeTemplate) {
-        super(applicationTemplate, nodeTemplate);
+    public PlatformNodeTemplateFacade(Map<String, Object> applicationTemplate, String nodeTemplateId) {
+        super(applicationTemplate, nodeTemplateId);
     }
 
     public static boolean isSupported(String type) {
@@ -41,7 +41,7 @@ public class PlatformNodeTemplateFacade extends AbstractHostNodeTemplate {
     }
 
     @Override
-    public Map<String, Object> getLocationPolicy() {
+    public Map<String, Object> getLocationPolicyProperties() {
         return createSimpleLocationPolicy();
     }
 

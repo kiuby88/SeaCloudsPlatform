@@ -57,8 +57,6 @@ public class DamGenerator {
     private static final String SLA_INFO_GROUPNAME = "sla_gen_info";
     private static final String MONITOR_INFO_GROUPNAME = "monitoringInformation";
 
-    public static final String ADD_BROOKLYN_LOCATION = "add_brooklyn_location_";
-
     public static final String TYPE = "type";
     public static final String CLOUD_FOUNDRY = "CloudFoundry";
     public static final String POLICIES = "policies";
@@ -151,16 +149,20 @@ public class DamGenerator {
         template = translateAPD(adpYaml);
         MonitoringInfo monitoringInfo = generateMonitoringInfo();
         addMonitorInfo(monitoringInfo);
-        manageNodeTypes();
         applicationInfoId = getAgreementManager().generateAgreeemntId(template);
         addApplicationInfo(applicationInfoId);
-        relationManagement();
-
         addSeaCloudsPolicy(monitoringInfo, applicationInfoId);
 
-        manageGroups();
+        customize();
 
         return getYamlParser().dump(template);
+    }
+
+    private void customize() {
+        relationManagement();
+        manageNodeTypes();
+        manageGroups();
+        //normalizePlatformNodeTemplates();
     }
 
     private void addSeaCloudsPolicy(MonitoringInfo monitoringInfo, String applicationInfoId) {
@@ -207,6 +209,18 @@ public class DamGenerator {
         Map groups = (Map) template.remove(GROUPS);
         addPoliciesTypeIfNotPresent(groups);
         ((Map) template.get(TOPOLOGY_TEMPLATE)).put(GROUPS, groups);
+    }
+
+    private void normalizePlatformNodeTemplates() {
+        Map<String, Object> topologyTemplate = (Map<String, Object>) template.get(TOPOLOGY_TEMPLATE);
+        Map<String, Object> nodeTemplates = (Map<String, Object>) topologyTemplate.get(NODE_TEMPLATES);
+
+        Map<String, Object> groups = (Map<String, Object>) topologyTemplate.get(GROUPS);
+
+        for (Map.Entry<String, HostNodeTemplateFacade> entry : hostNodeTemplateFacades.entrySet()) {
+            nodeTemplates.remove(entry.getKey());
+        }
+
     }
 
     @SuppressWarnings("unchecked")
@@ -282,7 +296,7 @@ public class DamGenerator {
             Map<String, Object> module = (Map<String, Object>) nodeTemplates.get(moduleName);
 
             NodeTemplateFacade nodeTemplateFacade =
-                    NodeTemplateFactory.createNodeTemplate(originalAdp, module);
+                    NodeTemplateFactory.createNodeTemplate(originalAdp, moduleName);
             nodeTemplateFacades.put(moduleName, nodeTemplateFacade);
 
             String moduleType = nodeTemplateFacade.getModuleType();
@@ -303,7 +317,7 @@ public class DamGenerator {
 
             nodeTemplates.put(moduleName, nodeTemplateFacade.transform());
 
-            if(nodeTemplateFacade instanceof HostNodeTemplateFacade){
+            if (nodeTemplateFacade instanceof HostNodeTemplateFacade) {
                 hostNodeTemplateFacades
                         .put(moduleName, (HostNodeTemplateFacade) nodeTemplateFacade);
             } else {
@@ -318,41 +332,12 @@ public class DamGenerator {
         adpYaml.put(NODE_TYPES, damUsedNodeTypes);
 
         //get brookly location from host
-        for (String hostTemplate : topologyTree.keySet()) {
-            HashMap<String, Object> policyGroup = new HashMap<>();
-            policyGroup.put(MEMBERS, Arrays.asList(hostTemplate));
-
-            HostNodeTemplateFacade hostNodeTemplateFacade =
-                    hostNodeTemplateFacades.get(hostTemplate);
-
-            ArrayList<Map<String, Object>> policies = new ArrayList<>();
-            policies.add(hostNodeTemplateFacade.getLocationPolicy());
-            policyGroup.put(POLICIES, policies);
-
-            ADPgroups.put(ADD_BROOKLYN_LOCATION + hostTemplate, policyGroup);
+        for (Map.Entry<String, HostNodeTemplateFacade> hostEntry : hostNodeTemplateFacades.entrySet()) {
+            HostNodeTemplateFacade hostNodeTemplate = hostEntry.getValue();
+            ADPgroups.put(hostNodeTemplate.getLocationPolicyGroupName(),
+                    hostNodeTemplate.getLocationPolicyGroupValues());
         }
         return adpYaml;
-    }
-
-    public URL getMonitoringEndpoint() {
-        try {
-            return new URL("http://" + monitorUrl + ":" + monitorPort + "");
-        } catch (MalformedURLException e) {
-            Exceptions.propagateIfFatal(e);
-            log.warn("Error creating MonitoringEndpoint: http://" + monitorUrl + ":" + monitorPort);
-        }
-        return null;
-    }
-
-    public URL getInfluxDbEndpoint() {
-        try {
-            return new URL("http://" + influxdbUrl + ":" + influxdbPort + "");
-
-        } catch (MalformedURLException e) {
-            Exceptions.propagateIfFatal(e);
-            log.warn("Error creating InfluxDbEndpoint: http://" + influxdbUrl + ":" + influxdbPort);
-        }
-        return null;
     }
 
     public void addApplicationInfo(String applicationInfoId) {
@@ -395,8 +380,6 @@ public class DamGenerator {
                 nodeTemplate.put(REQUIREMENTS, fixedRequirements);
             }
         }
-
-
     }
 
     @SuppressWarnings("unchecked")
@@ -527,6 +510,27 @@ public class DamGenerator {
         DumperOptions options = new DumperOptions();
         options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
         return new Yaml(options);
+    }
+
+    public URL getMonitoringEndpoint() {
+        try {
+            return new URL("http://" + monitorUrl + ":" + monitorPort + "");
+        } catch (MalformedURLException e) {
+            Exceptions.propagateIfFatal(e);
+            log.warn("Error creating MonitoringEndpoint: http://" + monitorUrl + ":" + monitorPort);
+        }
+        return null;
+    }
+
+    public URL getInfluxDbEndpoint() {
+        try {
+            return new URL("http://" + influxdbUrl + ":" + influxdbPort + "");
+
+        } catch (MalformedURLException e) {
+            Exceptions.propagateIfFatal(e);
+            log.warn("Error creating InfluxDbEndpoint: http://" + influxdbUrl + ":" + influxdbPort);
+        }
+        return null;
     }
 
     public class SlaAgreementManager {

@@ -17,15 +17,35 @@
 package eu.seaclouds.platform.planner.core.facade.host;
 
 import eu.seaclouds.platform.planner.core.facade.AbstractNodeTemplateFacade;
+import org.apache.brooklyn.util.collections.MutableMap;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Map;
 
 public abstract class AbstractHostNodeTemplate extends AbstractNodeTemplateFacade
         implements HostNodeTemplateFacade {
 
-    public AbstractHostNodeTemplate(Map<String, Object> applicationTemplate, Map<String, Object> nodeTemplate) {
-        super(applicationTemplate, nodeTemplate);
+
+    public AbstractHostNodeTemplate(Map<String, Object> applicationTemplate, String nodeTemplateId) {
+        super(applicationTemplate, nodeTemplateId);
     }
 
+    @Override
+    public String getLocationPolicyGroupName() {
+        return ADD_BROOKLYN_LOCATION_PEFIX + nodeTemplateId;
+    }
+
+    public Map<String, Object> getLocationPolicyGroupValues() {
+        Map<String, Object> policyGroupValues = MutableMap.of();
+        policyGroupValues.put(MEMBERS, Arrays.asList(nodeTemplateId));
+
+        ArrayList<Map<String, Object>> policyList = new ArrayList<>();
+        policyList.add(getLocationPolicyProperties());
+        policyGroupValues.put(POLICIES, policyList);
+        return policyGroupValues;
+    }
+
+    protected abstract Map<String, Object> getLocationPolicyProperties();
 
 }

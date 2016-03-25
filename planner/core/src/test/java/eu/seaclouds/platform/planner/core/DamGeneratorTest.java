@@ -106,7 +106,7 @@ public class DamGeneratorTest {
     @Test
     @SuppressWarnings("unchecked")
     public void testMetadataTemplate() throws Exception {
-        String adp = new Scanner(new File(Resources.getResource("nuro/nuro_adp.yml").toURI())).useDelimiter("\\Z").next();
+        String adp = new Scanner(new File(Resources.getResource("nuro/nuro_adp-iaas.yml").toURI())).useDelimiter("\\Z").next();
 
         DamGenerator damGenerator = getDamGenerator();
         damGenerator.setAgreementManager(fakeAgreementManager);
@@ -131,7 +131,7 @@ public class DamGeneratorTest {
     @Test
     @SuppressWarnings("unchecked")
     public void testGroupsAsTopologyChild() throws Exception {
-        String adp = new Scanner(new File(Resources.getResource("nuro/nuro_adp.yml").toURI())).useDelimiter("\\Z").next();
+        String adp = new Scanner(new File(Resources.getResource("nuro/nuro_adp-iaas.yml").toURI())).useDelimiter("\\Z").next();
 
         DamGenerator damGenerator = getDamGenerator();
         damGenerator.setAgreementManager(fakeAgreementManager);
@@ -160,14 +160,14 @@ public class DamGeneratorTest {
     @Test
     @SuppressWarnings("unchecked")
     public void testNuroDam() throws Exception {
-        String adp = new Scanner(new File(Resources.getResource("nuro/nuro_adp.yml").toURI())).useDelimiter("\\Z").next();
+        String adp = new Scanner(new File(Resources.getResource("nuro/nuro_adp-iaas.yml").toURI())).useDelimiter("\\Z").next();
 
         DamGenerator damGenerator = getDamGenerator();
         damGenerator.setAgreementManager(fakeAgreementManager);
         dam = damGenerator.generateDam(adp);
         template = (Map<String, Object>) yamlParser.load(dam);
 
-        String expectedDamString = new Scanner(new File(Resources.getResource("nuro/nuro_dam.yml").toURI())).useDelimiter("\\Z").next();
+        String expectedDamString = new Scanner(new File(Resources.getResource("nuro/nuro_dam-iaas.yml").toURI())).useDelimiter("\\Z").next();
         Map<String, Object> expectedDam = (Map<String, Object>) yamlParser.load(expectedDamString);
 
         assertNotNull(template);
@@ -342,21 +342,10 @@ public class DamGeneratorTest {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
     @Test
     @SuppressWarnings("unchecked")
     public void testHH() throws Exception {
-        String adp = new Scanner(new File(Resources.getResource("j/cf-db.yml").toURI())).useDelimiter("\\Z").next();
+        String adp = new Scanner(new File(Resources.getResource("nuro/nuro_adp-paas.yml").toURI())).useDelimiter("\\Z").next();
 
         DamGenerator damGenerator = getDamGenerator();
         damGenerator.setAgreementManager(fakeAgreementManager);

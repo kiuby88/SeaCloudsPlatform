@@ -18,6 +18,7 @@ package eu.seaclouds.platform.planner.core.facade;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Resources;
+import eu.seaclouds.platform.planner.core.DamGenerator;
 import eu.seaclouds.platform.planner.core.facade.host.ComputeNodeTemplateFacade;
 import eu.seaclouds.platform.planner.core.resolver.DeployerTypesResolver;
 import org.apache.brooklyn.util.collections.MutableMap;
@@ -50,6 +51,7 @@ public class AbstractNodeTemplateFacade implements NodeTemplateFacade {
     public static final String BROOKLYN_PAAS_TYPES_MAPPING =
             "mapping/brooklyn-paas-types-mapping.yaml";
 
+    protected final String nodeTemplateId;
     private Map<String, Object> module;
     private final Map<String, Object> applicationTemplate;
     private List<Map<String, Object>> requirements;
@@ -57,11 +59,13 @@ public class AbstractNodeTemplateFacade implements NodeTemplateFacade {
     private Map<String, Object> nodeTypes;
     private DeployerTypesResolver deployerTypesResolver;
     private Map<String, Object> properties;
+    private Map<String, Object> topologyTemplate;
+    private Map<String, Object> nodeTemplates;
 
     public AbstractNodeTemplateFacade(Map<String, Object> applicationTemplate,
-                                      Map<String, Object> nodeTemplate) {
+                                      String nodeTemplateId) {
         this.applicationTemplate = applicationTemplate;
-        this.module = nodeTemplate;
+        this.nodeTemplateId = nodeTemplateId;
         init();
         customize();
     }
@@ -78,7 +82,11 @@ public class AbstractNodeTemplateFacade implements NodeTemplateFacade {
         return nodeTemplate;
     }
 
+    @SuppressWarnings("unchecked")
     private void init() {
+        this.topologyTemplate = (Map<String, Object>) applicationTemplate.get(DamGenerator.TOPOLOGY_TEMPLATE);
+        this.nodeTemplates = (Map<String, Object>) topologyTemplate.get(DamGenerator.NODE_TEMPLATES);
+        this.module = (Map<String, Object>) nodeTemplates.get(nodeTemplateId);
         initRequirements();
         initArtifacts();
         initNodeTypes();

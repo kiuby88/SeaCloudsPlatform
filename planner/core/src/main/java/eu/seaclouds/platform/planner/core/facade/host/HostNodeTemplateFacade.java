@@ -21,7 +21,13 @@ import java.util.Map;
 public interface HostNodeTemplateFacade {
 
     public static final String BROOKLYN_LOCATION = "brooklyn.location";
+    public static final String ADD_BROOKLYN_LOCATION_PEFIX = "add_brooklyn_location_";
+    public static final String MEMBERS = "members";
+    public static final String POLICIES = "policies";
+
 
     //TODO: should be connected with policies facades
-    public Map<String, Object> getLocationPolicy();
+    public Map<String, Object> getLocationPolicyGroupValues();
+
+    public String getLocationPolicyGroupName();
 }

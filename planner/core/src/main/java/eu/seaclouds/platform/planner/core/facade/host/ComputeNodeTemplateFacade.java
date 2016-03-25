@@ -32,8 +32,8 @@ public class ComputeNodeTemplateFacade extends AbstractHostNodeTemplate {
     private static final List<String> SUPPORTED_TYPES =
             ImmutableList.of("tosca.nodes.Compute", "seaclouds.nodes.Compute");
 
-    public ComputeNodeTemplateFacade(Map<String, Object> applicationTemplate, Map<String, Object> nodeTemplate) {
-        super(applicationTemplate, nodeTemplate);
+    public ComputeNodeTemplateFacade(Map<String, Object> applicationTemplate, String nodeTemplateId) {
+        super(applicationTemplate, nodeTemplateId);
     }
 
     public static boolean isSupported(String type) {
@@ -46,7 +46,7 @@ public class ComputeNodeTemplateFacade extends AbstractHostNodeTemplate {
     }
 
     @Override
-    public Map<String, Object> getLocationPolicy() {
+    public Map<String, Object> getLocationPolicyProperties() {
         return createSimpleLocationPolicy();
     }
 
@@ -76,7 +76,7 @@ public class ComputeNodeTemplateFacade extends AbstractHostNodeTemplate {
         return locationProperties;
     }
 
-    private Map<String, Object> createSimpleLocationPolicy() {
+    protected Map<String, Object> createSimpleLocationPolicy() {
         Map<String, Object> locationPolicyDescription = MutableMap.of();
         Map<String, Object> properties = getProperties();
         String location = (String) properties.get(LOCATION);

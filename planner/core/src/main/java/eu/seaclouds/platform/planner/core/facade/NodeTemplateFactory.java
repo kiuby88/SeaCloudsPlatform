@@ -16,6 +16,7 @@
  */
 package eu.seaclouds.platform.planner.core.facade;
 
+import eu.seaclouds.platform.planner.core.DamGenerator;
 import eu.seaclouds.platform.planner.core.facade.host.ComputeNodeTemplateFacade;
 import eu.seaclouds.platform.planner.core.facade.host.PlatformNodeTemplateFacade;
 
@@ -24,15 +25,20 @@ import java.util.Map;
 public class NodeTemplateFactory {
 
     public static NodeTemplateFacade createNodeTemplate(Map<String, Object> applicationTemplate,
-                                                        Map<String, Object> nodeTemplate) {
+                                                        String nodeTemplateId) {
 
-        String nodeTemplateType = (String) nodeTemplate.get(NodeTemplateFacade.TYPE);
-        if (ComputeNodeTemplateFacade.isSupported(nodeTemplateType)) {
-            return new ComputeNodeTemplateFacade(applicationTemplate, nodeTemplate);
-        } else if (PlatformNodeTemplateFacade.isSupported(nodeTemplateType)) {
-            return new PlatformNodeTemplateFacade(applicationTemplate, nodeTemplate);
+        Map<String, Object> topologyTemplate = (Map<String, Object>) applicationTemplate.get(DamGenerator.TOPOLOGY_TEMPLATE);
+        Map<String, Object> nodeTemplates = (Map<String, Object>) topologyTemplate.get(DamGenerator.NODE_TEMPLATES);
+        Map<String, Object> module = (Map<String, Object>) nodeTemplates.get(nodeTemplateId);
+
+        String moduleType = (String) module.get(NodeTemplateFacade.TYPE);
+
+        if (ComputeNodeTemplateFacade.isSupported(moduleType)) {
+            return new ComputeNodeTemplateFacade(applicationTemplate, nodeTemplateId);
+        } else if (PlatformNodeTemplateFacade.isSupported(moduleType)) {
+            return new PlatformNodeTemplateFacade(applicationTemplate, nodeTemplateId);
         } else {
-            return new AbstractNodeTemplateFacade(applicationTemplate, nodeTemplate);
+            return new AbstractNodeTemplateFacade(applicationTemplate, nodeTemplateId);
         }
 
     }
