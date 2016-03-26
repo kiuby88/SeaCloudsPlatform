@@ -26,7 +26,7 @@ topology_template:
       properties:
         language: PHP
         autoscale: false
-        git.url: https://seaclDem:seaclouds@bitbucket.org/seaclDem/nuro-casestudy.git
+        application-url: https://seaclDem:seaclouds@bitbucket.org/seaclDem/nuro-casestudy.git
       type: org.apache.brooklyn.entity.cloudfoundry.webapp.php.PhpCloudFoundryPaasWebApp
       
     Amazon_EC2_c3_2xlarge_ap_southeast_2:

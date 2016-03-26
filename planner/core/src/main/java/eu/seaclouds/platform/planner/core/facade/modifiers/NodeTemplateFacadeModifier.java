@@ -14,26 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package eu.seaclouds.platform.planner.core.facade;
+package eu.seaclouds.platform.planner.core.facade.modifiers;
 
-import java.util.List;
-import java.util.Map;
+import eu.seaclouds.platform.planner.core.facade.NodeTemplateFacade;
 
-public interface NodeTemplateFacade {
+/**
+ * A NodeTemplateFacadeModifier applies a set of changes to an NodeTemplate according to Deployer
+ * reqirements
+ */
+public interface NodeTemplateFacadeModifier {
 
-    public static final String TYPE = "type";
+    void apply(NodeTemplateFacade entitySpec);
 
-    public Map<String, Object> transform();
-
-    boolean isDeployedOnIaaS();
-
-    public Map<String, Object> getNodeTypeDefinition();
-
-    public String getModuleType();
-
-    public String getType();
-
-    public String getHostNodeName();
-
-    List<Map<String, Object>> getArtifacts();
 }
+
+
+

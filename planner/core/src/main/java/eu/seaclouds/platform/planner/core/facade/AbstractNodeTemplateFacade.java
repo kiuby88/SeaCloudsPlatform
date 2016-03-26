@@ -20,6 +20,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.io.Resources;
 import eu.seaclouds.platform.planner.core.DamGenerator;
 import eu.seaclouds.platform.planner.core.facade.host.ComputeNodeTemplateFacade;
+import eu.seaclouds.platform.planner.core.facade.modifiers.PhpPaasArtifactsModifier;
 import eu.seaclouds.platform.planner.core.resolver.DeployerTypesResolver;
 import org.apache.brooklyn.util.collections.MutableMap;
 import org.slf4j.Logger;
@@ -96,12 +97,17 @@ public class AbstractNodeTemplateFacade implements NodeTemplateFacade {
 
     private void customize() {
         customizeRequirements();
+        applyModifiers();
+    }
+
+    private void applyModifiers() {
+        PhpPaasArtifactsModifier phpPaasArtifactsModifier = new PhpPaasArtifactsModifier();
+        phpPaasArtifactsModifier.apply(this);
     }
 
     private void initNodeTypes() {
         nodeTypes = (Map<String, Object>) applicationTemplate.get(NODE_TYPES);
     }
-
 
     private List<Map<String, Object>> initRequirements() {
         requirements = ImmutableList.of();
@@ -196,7 +202,7 @@ public class AbstractNodeTemplateFacade implements NodeTemplateFacade {
     }
 
     protected Map<String, Object> getProperties() {
-        return (Map<String, Object>) module.get(PROPERTIES);
+        return properties;
     }
 
     private String getParentType() {
@@ -220,14 +226,15 @@ public class AbstractNodeTemplateFacade implements NodeTemplateFacade {
     }
 
     private void initTypeResolver() {
-        if (moduleIsDeployedOnIaaS()) {
+        if (isDeployedOnIaaS()) {
             getDeployerIaaSTypeResolver();
         } else {
             getDeployerPaaSTypeResolver();
         }
     }
 
-    private boolean moduleIsDeployedOnIaaS() {
+    @Override
+    public boolean isDeployedOnIaaS() {
         return isAnIaasType(getModuleType()) || hostDeployedOnIaaS();
     }
 
@@ -276,4 +283,8 @@ public class AbstractNodeTemplateFacade implements NodeTemplateFacade {
         return deployerTypesResolver;
     }
 
+    @Override
+    public List<Map<String, Object>> getArtifacts(){
+        return artifacts;
+    }
 }
