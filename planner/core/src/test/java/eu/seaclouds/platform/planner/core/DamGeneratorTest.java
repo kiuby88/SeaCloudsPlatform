@@ -18,6 +18,7 @@ package eu.seaclouds.platform.planner.core;
 
 import com.google.common.collect.Iterators;
 import com.google.common.io.Resources;
+import eu.seaclouds.platform.planner.core.facade.ApplicationMetadataFacade;
 import eu.seaclouds.platform.planner.core.facade.policies.SeaCloudsManagementPolicyFacade;
 import org.apache.brooklyn.util.text.Strings;
 import org.mockito.Mock;
@@ -96,39 +97,6 @@ public class DamGeneratorTest {
         return damGenerator;
     }
 
-    private static String getMonitorEndpoint() {
-        return "http://" + MONITOR_URL + ":" + MONITOR_PORT;
-    }
-
-    private static String getInfluxDbEndpoint() {
-        return "http://" + INFLUXDB_URL + ":" + INFLUXDB_PORT;
-    }
-
-    @Test
-    @SuppressWarnings("unchecked")
-    public void testMetadataTemplate() throws Exception {
-        String adp = new Scanner(new File(Resources.getResource("nuro/iaas/nuro_adp-iaas.yml").toURI())).useDelimiter("\\Z").next();
-
-        DamGenerator damGenerator = getDamGenerator();
-        damGenerator.setAgreementManager(fakeAgreementManager);
-        dam = damGenerator.generateDam(adp);
-        template = (Map<String, Object>) yamlParser.load(dam);
-
-        assertNotNull(template);
-        assertNotNull(template.get(DamGenerator.TEMPLATE_NAME));
-        assertTrue(((String) template.get(DamGenerator.TEMPLATE_NAME)).contains(DamGenerator.TEMPLATE_NAME_PREFIX));
-
-        assertNotNull(template.get(DamGenerator.TEMPLATE_VERSION));
-        assertTrue(((String) template.get(DamGenerator.TEMPLATE_VERSION)).contains(DamGenerator.DEFAULT_TEMPLATE_VERSION));
-
-        assertNotNull(template.get(DamGenerator.IMPORTS));
-        assertTrue(template.get(DamGenerator.IMPORTS) instanceof List);
-        List imports = (List) template.get(DamGenerator.IMPORTS);
-        assertEquals(imports.size(), 2);
-        assertTrue(imports.contains(DamGenerator.TOSCA_NORMATIVE_TYPES + ":" + DamGenerator.TOSCA_NORMATIVE_TYPES_VERSION));
-        assertTrue(imports.contains(DamGenerator.SEACLOUDS_NODE_TYPES + ":" + DamGenerator.SEACLOUDS_NODE_TYPES_VERSION));
-    }
-
     @Test
     @SuppressWarnings("unchecked")
     public void testGroupsAsTopologyChild() throws Exception {
@@ -138,6 +106,8 @@ public class DamGeneratorTest {
         damGenerator.setAgreementManager(fakeAgreementManager);
         dam = damGenerator.generateDam(adp);
         template = (Map<String, Object>) yamlParser.load(dam);
+
+        testMetadataTemplate(template);
 
         assertTrue(template.containsKey(DamGenerator.TOPOLOGY_TEMPLATE));
         Map<String, Object> topologyTemplate =
@@ -167,6 +137,8 @@ public class DamGeneratorTest {
         damGenerator.setAgreementManager(fakeAgreementManager);
         dam = damGenerator.generateDam(adp);
         template = (Map<String, Object>) yamlParser.load(dam);
+
+        testMetadataTemplate(template);
 
         String expectedDamString = new Scanner(new File(Resources.getResource("nuro/iaas/nuro_dam-iaas.yml").toURI())).useDelimiter("\\Z").next();
         Map<String, Object> expectedDam = (Map<String, Object>) yamlParser.load(expectedDamString);
@@ -210,6 +182,8 @@ public class DamGeneratorTest {
         dam = damGenerator.generateDam(adp);
         template = (Map<String, Object>) yamlParser.load(dam);
 
+        testMetadataTemplate(template);
+
         String expectedDamString = new Scanner(new File(Resources.getResource("nuro/paas/nuro_dam-paas.yml").toURI())).useDelimiter("\\Z").next();
         Map<String, Object> expectedDam = (Map<String, Object>) yamlParser.load(expectedDamString);
 
@@ -242,8 +216,6 @@ public class DamGeneratorTest {
                 expectedGroups.get("add_brooklyn_location_Amazon_EC2_c3_2xlarge_ap_southeast_2"));
         assertEquals(generatedGroups.get("add_brooklyn_location_php"),
                 expectedGroups.get("add_brooklyn_location_php"));
-
-
     }
 
     @Test
@@ -255,6 +227,8 @@ public class DamGeneratorTest {
         damGenerator.setAgreementManager(fakeAgreementManager);
         dam = damGenerator.generateDam(adp);
         template = (Map<String, Object>) yamlParser.load(dam);
+
+        testMetadataTemplate(template);
 
         String expectedDamString = new Scanner(new File(Resources.getResource("atos/atos_dam.yml").toURI())).useDelimiter("\\Z").next();
         Map<String, Object> expectedDam = (Map<String, Object>) yamlParser.load(expectedDamString);
@@ -307,6 +281,8 @@ public class DamGeneratorTest {
         dam = damGenerator.generateDam(adp);
         template = (Map<String, Object>) yamlParser.load(dam);
 
+        testMetadataTemplate(template);
+
         String expectedDamString = new Scanner(new File(Resources.getResource("webchat/iaas/webchat_dam-iaas.yml").toURI())).useDelimiter("\\Z").next();
         Map<String, Object> expectedDam = (Map<String, Object>) yamlParser.load(expectedDamString);
 
@@ -350,6 +326,8 @@ public class DamGeneratorTest {
         damGenerator.setAgreementManager(fakeAgreementManager);
         dam = damGenerator.generateDam(adp);
         template = (Map<String, Object>) yamlParser.load(dam);
+
+        testMetadataTemplate(template);
 
         String expectedDamString = new Scanner(new File(Resources.getResource("webchat/paas/webchat_dam-paas.yml").toURI())).useDelimiter("\\Z").next();
         Map<String, Object> expectedDam = (Map<String, Object>) yamlParser.load(expectedDamString);
@@ -461,6 +439,31 @@ public class DamGeneratorTest {
                 (List<String>) monitoringConfigurationGroup.get(DamGenerator.MEMBERS);
         assertEquals(members.size(), 1);
         assertEquals(Iterators.getOnlyElement(members.iterator()), DamGenerator.APPLICATION);
+    }
+
+    private static String getMonitorEndpoint() {
+        return "http://" + MONITOR_URL + ":" + MONITOR_PORT;
+    }
+
+    private static String getInfluxDbEndpoint() {
+        return "http://" + INFLUXDB_URL + ":" + INFLUXDB_PORT;
+    }
+
+    @SuppressWarnings("unchecked")
+    public void testMetadataTemplate(Map<String, Object> template) throws Exception {
+        assertNotNull(template);
+        assertNotNull(template.get(ApplicationMetadataFacade.TEMPLATE_NAME));
+        assertTrue(((String) template.get(ApplicationMetadataFacade.TEMPLATE_NAME)).contains(ApplicationMetadataFacade.TEMPLATE_NAME_PREFIX));
+
+        assertNotNull(template.get(ApplicationMetadataFacade.TEMPLATE_VERSION));
+        assertTrue(((String) template.get(ApplicationMetadataFacade.TEMPLATE_VERSION)).contains(ApplicationMetadataFacade.DEFAULT_TEMPLATE_VERSION));
+
+        assertNotNull(template.get(ApplicationMetadataFacade.IMPORTS));
+        assertTrue(template.get(ApplicationMetadataFacade.IMPORTS) instanceof List);
+        List imports = (List) template.get(ApplicationMetadataFacade.IMPORTS);
+        assertEquals(imports.size(), 2);
+        assertTrue(imports.contains(ApplicationMetadataFacade.TOSCA_NORMATIVE_TYPES + ":" + ApplicationMetadataFacade.TOSCA_NORMATIVE_TYPES_VERSION));
+        assertTrue(imports.contains(ApplicationMetadataFacade.SEACLOUDS_NODE_TYPES + ":" + ApplicationMetadataFacade.SEACLOUDS_NODE_TYPES_VERSION));
     }
 
 }

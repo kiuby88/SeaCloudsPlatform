@@ -22,6 +22,7 @@ import com.google.common.io.Resources;
 import eu.seaclouds.monitor.monitoringdamgenerator.MonitoringDamGenerator;
 import eu.seaclouds.monitor.monitoringdamgenerator.MonitoringInfo;
 import eu.seaclouds.platform.planner.core.facade.AbstractNodeTemplateFacade;
+import eu.seaclouds.platform.planner.core.facade.ApplicationMetadataFacade;
 import eu.seaclouds.platform.planner.core.facade.NodeTemplateFacade;
 import eu.seaclouds.platform.planner.core.facade.NodeTemplateFactory;
 import eu.seaclouds.platform.planner.core.facade.host.HostNodeTemplateFacade;
@@ -31,7 +32,6 @@ import eu.seaclouds.platform.planner.core.resolver.DeployerTypesResolver;
 import org.apache.brooklyn.util.collections.MutableList;
 import org.apache.brooklyn.util.collections.MutableMap;
 import org.apache.brooklyn.util.exceptions.Exceptions;
-import org.apache.brooklyn.util.text.Identifiers;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 import org.slf4j.Logger;
@@ -60,7 +60,6 @@ public class DamGenerator {
     public static final String MONITOR_INFO_GROUPNAME = "monitoringInformation";
 
     public static final String TYPE = "type";
-    public static final String CLOUD_FOUNDRY = "CloudFoundry";
     public static final String POLICIES = "policies";
     public static final String GROUPS = "groups";
     public static final String MEMBERS = "members";
@@ -73,16 +72,8 @@ public class DamGenerator {
     public static final String BROOKLYN_IAAS_TYPES_MAPPING = "mapping/brooklyn-iaas-types-mapping.yaml";
     public static final String BROOKLYN_PAAS_TYPES_MAPPING = "mapping/brooklyn-paas-types-mapping.yaml";
     public static final String BROOKLYN_POLICY_TYPE = "brooklyn.location";
-    public static final String IMPORTS = "imports";
-    public static final String TOSCA_NORMATIVE_TYPES = "tosca-normative-types";
-    public static final String TOSCA_NORMATIVE_TYPES_VERSION = "1.0.0.wd06-SNAPSHOT";
-    public static final String SEACLOUDS_NODE_TYPES = "seaclouds-types";
-    public static final String SEACLOUDS_NODE_TYPES_VERSION = "0.8.0-SNAPSHOT";
 
-    public static final String TEMPLATE_NAME = "template_name";
-    public static final String TEMPLATE_NAME_PREFIX = "seaclouds.app.";
-    public static final String TEMPLATE_VERSION = "template_version";
-    public static final String DEFAULT_TEMPLATE_VERSION = "1.0.0-SNAPSHOT";
+
     public static final String SEACLOUDS_MONITORING_RULES_ID_POLICY = "seaclouds.policies.monitoringrules";
     public static final String MONITORING_RULES_POLICY_NAME = "monitoringrules.information.policy";
     public static final String SEACLOUDS_APPLICATION_INFORMATION_POLICY_TYPE = "seaclouds.policies.app.information";
@@ -144,8 +135,8 @@ public class DamGenerator {
         originalAdp =
                 normalizeComputeTypes((Map<String, Object>) getYamlParser().load(adp));
 
-        Map<String, Object> adpYaml =
-                manageTemplateMetada((Map<String, Object>) getYamlParser().load(adp));
+        ApplicationMetadataFacade applicationMetadata = new ApplicationMetadataFacade(originalAdp);
+        Map<String, Object> adpYaml = applicationMetadata.normalizeMetadata();
         adpYaml = normalizeComputeTypes(adpYaml);
 
         template = translateAPD(adpYaml);
@@ -250,34 +241,36 @@ public class DamGenerator {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    public Map<String, Object> manageTemplateMetada(Map<String, Object> template) {
-        if (template.containsKey(IMPORTS)) {
-            List<String> imports = (List<String>) template.get(IMPORTS);
-            if (imports != null) {
-                String importedNormativeTypes = null;
-                for (String dependency : imports) {
-                    if (dependency.contains(TOSCA_NORMATIVE_TYPES)) {
-                        importedNormativeTypes = dependency;
-                    }
-                }
-                if ((importedNormativeTypes != null) && (!importedNormativeTypes.equals(TOSCA_NORMATIVE_TYPES + ":" + TOSCA_NORMATIVE_TYPES_VERSION))) {
-                    imports.remove(importedNormativeTypes);
-                    imports.add(TOSCA_NORMATIVE_TYPES + ":" + TOSCA_NORMATIVE_TYPES_VERSION);
-                }
-                imports.add(SEACLOUDS_NODE_TYPES + ":" + SEACLOUDS_NODE_TYPES_VERSION);
-            }
-        }
-
-        if (!template.containsKey(TEMPLATE_NAME)) {
-            template.put(TEMPLATE_NAME, TEMPLATE_NAME_PREFIX + Identifiers.makeRandomId(8));
-        }
-
-        if (!template.containsKey(TEMPLATE_VERSION)) {
-            template.put(TEMPLATE_VERSION, DEFAULT_TEMPLATE_VERSION);
-        }
-        return template;
-    }
+//    aaaaaaaasdfghjkl
+//    @SuppressWarnings("unchecked")
+//    public Map<String, Object> manageTemplateMetada(Map<String, Object> template) {
+//        if (template.containsKey(IMPORTS)) {
+//            List<String> imports = (List<String>) template.get(IMPORTS);
+//            if (imports != null) {
+//                String importedNormativeTypes = null;
+//                for (String dependency : imports) {
+//                    if (dependency.contains(TOSCA_NORMATIVE_TYPES)) {
+//                        importedNormativeTypes = dependency;
+//                    }
+//                }
+//                if ((importedNormativeTypes != null) && (!importedNormativeTypes.equals(TOSCA_NORMATIVE_TYPES + ":" + TOSCA_NORMATIVE_TYPES_VERSION))) {
+//                    imports.remove(importedNormativeTypes);
+//                    imports.add(TOSCA_NORMATIVE_TYPES + ":" + TOSCA_NORMATIVE_TYPES_VERSION);
+//                }
+//                imports.add(SEACLOUDS_NODE_TYPES + ":" + SEACLOUDS_NODE_TYPES_VERSION);
+//            }
+//        }
+//
+//        if (!template.containsKey(TEMPLATE_NAME)) {
+//            template.put(TEMPLATE_NAME, TEMPLATE_NAME_PREFIX + Identifiers.makeRandomId(8));
+//        }
+//
+//        if (!template.containsKey(TEMPLATE_VERSION)) {
+//            template.put(TEMPLATE_VERSION, DEFAULT_TEMPLATE_VERSION);
+//        }
+//        return template;
+//    }
+//    1234567890qwertyuiopkjhgfdsazxcvbnm
 
     public MonitoringInfo generateMonitoringInfo() {
         MonitoringDamGenerator monDamGen;
@@ -403,7 +396,7 @@ public class DamGenerator {
                         fixedRequirements.add(requirement);
                     }
                 }
-                if(fixedRequirements.isEmpty()){
+                if (fixedRequirements.isEmpty()) {
                     nodeTemplate.remove(REQUIREMENTS);
                 } else {
                     nodeTemplate.put(REQUIREMENTS, fixedRequirements);
