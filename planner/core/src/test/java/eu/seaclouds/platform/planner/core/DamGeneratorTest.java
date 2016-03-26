@@ -16,6 +16,7 @@
  */
 package eu.seaclouds.platform.planner.core;
 
+import com.google.common.collect.Iterators;
 import com.google.common.io.Resources;
 import eu.seaclouds.platform.planner.core.facade.policies.SeaCloudsManagementPolicyFacade;
 import org.apache.brooklyn.util.text.Strings;
@@ -106,7 +107,7 @@ public class DamGeneratorTest {
     @Test
     @SuppressWarnings("unchecked")
     public void testMetadataTemplate() throws Exception {
-        String adp = new Scanner(new File(Resources.getResource("nuro/nuro_adp-iaas.yml").toURI())).useDelimiter("\\Z").next();
+        String adp = new Scanner(new File(Resources.getResource("nuro/iaas/nuro_adp-iaas.yml").toURI())).useDelimiter("\\Z").next();
 
         DamGenerator damGenerator = getDamGenerator();
         damGenerator.setAgreementManager(fakeAgreementManager);
@@ -131,7 +132,7 @@ public class DamGeneratorTest {
     @Test
     @SuppressWarnings("unchecked")
     public void testGroupsAsTopologyChild() throws Exception {
-        String adp = new Scanner(new File(Resources.getResource("nuro/nuro_adp-iaas.yml").toURI())).useDelimiter("\\Z").next();
+        String adp = new Scanner(new File(Resources.getResource("nuro/iaas/nuro_adp-iaas.yml").toURI())).useDelimiter("\\Z").next();
 
         DamGenerator damGenerator = getDamGenerator();
         damGenerator.setAgreementManager(fakeAgreementManager);
@@ -159,15 +160,15 @@ public class DamGeneratorTest {
 
     @Test
     @SuppressWarnings("unchecked")
-    public void testNuroDam() throws Exception {
-        String adp = new Scanner(new File(Resources.getResource("nuro/nuro_adp-iaas.yml").toURI())).useDelimiter("\\Z").next();
+    public void testNuroDamGenerationForIaaS() throws Exception {
+        String adp = new Scanner(new File(Resources.getResource("nuro/iaas/nuro_adp-iaas.yml").toURI())).useDelimiter("\\Z").next();
 
         DamGenerator damGenerator = getDamGenerator();
         damGenerator.setAgreementManager(fakeAgreementManager);
         dam = damGenerator.generateDam(adp);
         template = (Map<String, Object>) yamlParser.load(dam);
 
-        String expectedDamString = new Scanner(new File(Resources.getResource("nuro/nuro_dam-iaas.yml").toURI())).useDelimiter("\\Z").next();
+        String expectedDamString = new Scanner(new File(Resources.getResource("nuro/iaas/nuro_dam-iaas.yml").toURI())).useDelimiter("\\Z").next();
         Map<String, Object> expectedDam = (Map<String, Object>) yamlParser.load(expectedDamString);
 
         assertNotNull(template);
@@ -199,6 +200,60 @@ public class DamGeneratorTest {
         assertEquals(generatedGroups.get("operation_db"), expectedGroups.get("operation_db"));
         assertEquals(generatedGroups.get("add_brooklyn_location_Amazon_EC2_m1_small_eu_central_1"), expectedGroups.get("add_brooklyn_location_Amazon_EC2_m1_small_eu_central_1"));
         assertEquals(generatedGroups.get("add_brooklyn_location_Amazon_EC2_m4_10xlarge_eu_west_1"), expectedGroups.get("add_brooklyn_location_Amazon_EC2_m4_10xlarge_eu_west_1"));
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testNuroDamGenerationForPaaS() throws Exception {
+        String adp = new Scanner(new File(Resources.getResource("nuro/paas/nuro_adp-paas.yml").toURI())).useDelimiter("\\Z").next();
+
+        DamGenerator damGenerator = getDamGenerator();
+        damGenerator.setAgreementManager(fakeAgreementManager);
+        dam = damGenerator.generateDam(adp);
+        template = (Map<String, Object>) yamlParser.load(dam);
+
+        String expectedDamString = new Scanner(new File(Resources.getResource("nuro/paas/nuro_dam-paas.yml").toURI())).useDelimiter("\\Z").next();
+        Map<String, Object> expectedDam = (Map<String, Object>) yamlParser.load(expectedDamString);
+
+        assertNotNull(template);
+
+        Map<String, Object> generatedTopologyTemplate = (Map<String, Object>) template.get(DamGenerator.TOPOLOGY_TEMPLATE);
+        Map<String, Object> expectedTopologyTemplate = (Map<String, Object>) expectedDam.get(DamGenerator.TOPOLOGY_TEMPLATE);
+
+        Map<String, Object> generatedNodeTemplates = (Map<String, Object>) generatedTopologyTemplate.get(DamGenerator.NODE_TEMPLATES);
+        Map<String, Object> expectedNodeTemplates = (Map<String, Object>) expectedTopologyTemplate.get(DamGenerator.NODE_TEMPLATES);
+
+        /* check application modules */
+        assertEquals(generatedNodeTemplates.get("php"), expectedNodeTemplates.get("php"));
+        assertEquals(generatedNodeTemplates.get("db"), expectedNodeTemplates.get("db"));
+
+        /* check data collector */
+        assertEquals(generatedNodeTemplates.get("modacloudsDc_db"), expectedNodeTemplates.get("modacloudsDc_db"));
+        assertEquals(generatedNodeTemplates.get("seacloudsDc_db"), expectedNodeTemplates.get("seacloudsDc_db"));
+
+        /* check offerings */
+        assertEquals(generatedNodeTemplates.get("Amazon_EC2_c3_2xlarge_ap_southeast_2"),
+                expectedNodeTemplates.get("Amazon_EC2_c3_2xlarge_ap_southeast_2"));
+
+        Map<String, Object> generatedGroups = (Map<String, Object>) generatedTopologyTemplate.get(DamGenerator.GROUPS);
+        Map<String, Object> expectedGroups = (Map<String, Object>) expectedTopologyTemplate.get(DamGenerator.GROUPS);
+        testSeaCloudsPolicy(generatedGroups);
+
+        assertEquals(generatedGroups.get("operation_php"), expectedGroups.get("operation_php"));
+        assertEquals(generatedGroups.get("operation_db"), expectedGroups.get("operation_db"));
+
+        assertEquals(generatedGroups.get("add_brooklyn_location_Amazon_EC2_c3_2xlarge_ap_southeast_2"),
+                expectedGroups.get("add_brooklyn_location_Amazon_EC2_c3_2xlarge_ap_southeast_2"));
+        assertEquals(generatedGroups.get("add_brooklyn_location_php"),
+                expectedGroups.get("add_brooklyn_location_php"));
+
+        Map<String, Object> monitoringInformation = (Map<String, Object>) generatedGroups.get("monitoringInformation");
+        testMonitoringInformation(monitoringInformation);
+
+        assertEquals(generatedGroups.get("sla_gen_info"), expectedGroups.get("sla_gen_info"));
+
+        assertEquals(generatedGroups.get("seaclouds_configuration_policy"),
+                expectedGroups.get("seaclouds_configuration_policy"));
     }
 
     @Test
@@ -340,34 +395,24 @@ public class DamGeneratorTest {
         assertEquals(seacloudsManagementPolicyProperties.get(SeaCloudsManagementPolicyFacade.GRAFANA_PASSWORD), GRAFANA_PASSWORD);
     }
 
+    public void testMonitoringInformation(Map<String, Object> monitoringInformation){
+        assertTrue(monitoringInformation.containsKey(DamGenerator.POLICIES));
+        List<Map<String, Object>> policies =
+                (List<Map<String, Object>>) monitoringInformation.get(DamGenerator.POLICIES);
+        assertEquals(policies.size(), 1);
 
+        Map<String, Object> policy = Iterators.getOnlyElement(policies.iterator());
+        Map<String, Object> policyValues = (Map<String, Object> )policy.get("monitoringrules.information.policy");
+        assertTrue(policyValues.containsKey("id"));
+        assertFalse(Strings.isBlank((String) policyValues.get("id")));
 
-    @Test
-    @SuppressWarnings("unchecked")
-    public void testHH() throws Exception {
-        String adp = new Scanner(new File(Resources.getResource("nuro/nuro_adp-paas.yml").toURI())).useDelimiter("\\Z").next();
+        assertTrue(policyValues.containsKey(DamGenerator.TYPE));
+        assertTrue(Strings.isBlank((String) policyValues.get("seaclouds.policies.monitoringrules")));
 
-        DamGenerator damGenerator = getDamGenerator();
-        damGenerator.setAgreementManager(fakeAgreementManager);
-        dam = damGenerator.generateDam(adp);
-        template = (Map<String, Object>) yamlParser.load(dam);
-
+        assertTrue(monitoringInformation.containsKey(DamGenerator.MEMBERS));
+        List<String> members =
+                (List<String>) monitoringInformation.get(DamGenerator.MEMBERS);
+        assertEquals(members.size(), 1);
+        assertEquals(Iterators.getOnlyElement(members.iterator()), "application");
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 }

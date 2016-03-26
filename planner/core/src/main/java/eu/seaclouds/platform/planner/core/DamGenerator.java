@@ -21,9 +21,11 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Resources;
 import eu.seaclouds.monitor.monitoringdamgenerator.MonitoringDamGenerator;
 import eu.seaclouds.monitor.monitoringdamgenerator.MonitoringInfo;
+import eu.seaclouds.platform.planner.core.facade.AbstractNodeTemplateFacade;
 import eu.seaclouds.platform.planner.core.facade.NodeTemplateFacade;
 import eu.seaclouds.platform.planner.core.facade.NodeTemplateFactory;
 import eu.seaclouds.platform.planner.core.facade.host.HostNodeTemplateFacade;
+import eu.seaclouds.platform.planner.core.facade.host.PlatformNodeTemplateFacade;
 import eu.seaclouds.platform.planner.core.facade.policies.SeaCloudsManagementPolicyFacade;
 import eu.seaclouds.platform.planner.core.resolver.DeployerTypesResolver;
 import org.apache.brooklyn.util.collections.MutableList;
@@ -162,7 +164,7 @@ public class DamGenerator {
         relationManagement();
         manageNodeTypes();
         manageGroups();
-        //normalizePlatformNodeTemplates();
+        normalizePlatformNodeTemplates();
     }
 
     private void addSeaCloudsPolicy(MonitoringInfo monitoringInfo, String applicationInfoId) {
@@ -218,9 +220,34 @@ public class DamGenerator {
         Map<String, Object> groups = (Map<String, Object>) topologyTemplate.get(GROUPS);
 
         for (Map.Entry<String, HostNodeTemplateFacade> entry : hostNodeTemplateFacades.entrySet()) {
-            nodeTemplates.remove(entry.getKey());
-        }
+            HostNodeTemplateFacade hostNodeTemplateFacade = entry.getValue();
+            if (hostNodeTemplateFacade instanceof PlatformNodeTemplateFacade) {
+                nodeTemplates.remove(entry.getKey());
+                String platformPolicyGroupName =
+                        hostNodeTemplateFacade.getLocationPolicyGroupName();
 
+                Map<String, Object> platformPolicyGroupValues =
+                        (Map<String, Object>) groups.get(platformPolicyGroupName);
+
+                ArrayList<String> nodeTemplatesDeployedOnPlatform = topologyTree.get(entry.getKey());
+                if (nodeTemplatesDeployedOnPlatform.size() != 1) {
+                    throw new IllegalStateException("just one NodeTemplate can be deployed " +
+                            "on a PlatformNodeTemplate and " + entry.getKey() + " contains " +
+                            nodeTemplatesDeployedOnPlatform.size() + ": " +
+                            nodeTemplatesDeployedOnPlatform.toString());
+                }
+                String nodeTemplateDeployedPlatform = nodeTemplatesDeployedOnPlatform.get(0);
+
+                platformPolicyGroupValues.put(MEMBERS, Arrays.asList(nodeTemplateDeployedPlatform));
+                groups.remove(platformPolicyGroupName);
+                groups.put(HostNodeTemplateFacade.ADD_BROOKLYN_LOCATION_PEFIX + nodeTemplateDeployedPlatform, platformPolicyGroupValues);
+
+                nodeTemplates.get(nodeTemplateDeployedPlatform);
+                AbstractNodeTemplateFacade nodeTemplate = (AbstractNodeTemplateFacade) nodeTemplateFacades.get(nodeTemplateDeployedPlatform);
+                nodeTemplate.deleteHostRequirement();
+                nodeTemplates.put(nodeTemplateDeployedPlatform, nodeTemplate.transform());
+            }
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -281,7 +308,6 @@ public class DamGenerator {
         Map<String, Object> groups = (Map<String, Object>) template.get(GROUPS);
         groups.put(MONITOR_INFO_GROUPNAME, appGroup);
     }
-
 
     public Map<String, Object> translateAPD(Map<String, Object> adpYaml) {
 
@@ -480,7 +506,6 @@ public class DamGenerator {
         this.agreementManager = agManager;
     }
 
-
     public DeployerTypesResolver getDeployerIaaSTypeResolver() {
         try {
             if (deployerTypesResolver == null) {
@@ -504,7 +529,6 @@ public class DamGenerator {
         }
         return deployerTypesResolver;
     }
-
 
     public Yaml getYamlParser() {
         DumperOptions options = new DumperOptions();

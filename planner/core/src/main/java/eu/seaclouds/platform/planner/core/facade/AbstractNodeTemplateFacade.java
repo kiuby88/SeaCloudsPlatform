@@ -149,6 +149,11 @@ public class AbstractNodeTemplateFacade implements NodeTemplateFacade {
         return null;
     }
 
+    //TODO This method HAS TO BE DELETED. A new object has to be created which knows the Platform and NodeTemplate
+    public void deleteHostRequirement(){
+        requirements.remove(getHostRequirement());
+    }
+
     public String getHostNodeName() {
         String result = null;
         Map<String, Object> hostRequirement = getHostRequirement();
