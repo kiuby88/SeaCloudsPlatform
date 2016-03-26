@@ -195,7 +195,7 @@ public class DamGeneratorTest {
         Map<String, Object> generatedGroups = (Map<String, Object>) generatedTopologyTemplate.get(DamGenerator.GROUPS);
         Map<String, Object> expectedGroups = (Map<String, Object>) expectedTopologyTemplate.get(DamGenerator.GROUPS);
         testSeaCloudsPolicy(generatedGroups);
-        testMonitoringConfiguration(generatedGroups, expectedGroups);
+        testMonitoringConfiguration(generatedGroups);
 
         assertEquals(generatedGroups.get("operation_www"), expectedGroups.get("operation_www"));
         assertEquals(generatedGroups.get("operation_db"), expectedGroups.get("operation_db"));
@@ -239,7 +239,7 @@ public class DamGeneratorTest {
         Map<String, Object> generatedGroups = (Map<String, Object>) generatedTopologyTemplate.get(DamGenerator.GROUPS);
         Map<String, Object> expectedGroups = (Map<String, Object>) expectedTopologyTemplate.get(DamGenerator.GROUPS);
         testSeaCloudsPolicy(generatedGroups);
-        testMonitoringConfiguration(generatedGroups, expectedGroups);
+        testMonitoringConfiguration(generatedGroups);
 
         assertEquals(generatedGroups.get("operation_php"), expectedGroups.get("operation_php"));
         assertEquals(generatedGroups.get("operation_db"), expectedGroups.get("operation_db"));
@@ -296,7 +296,7 @@ public class DamGeneratorTest {
         Map<String, Object> generatedGroups = (Map<String, Object>) generatedTopologyTemplate.get(DamGenerator.GROUPS);
         Map<String, Object> expectedGroups = (Map<String, Object>) expectedTopologyTemplate.get(DamGenerator.GROUPS);
         testSeaCloudsPolicy(generatedGroups);
-        testMonitoringConfiguration(generatedGroups, expectedGroups);
+        testMonitoringConfiguration(generatedGroups);
 
         assertEquals(generatedGroups.get("operation_www"), expectedGroups.get("operation_www"));
         assertEquals(generatedGroups.get("operation_webservices"), expectedGroups.get("operation_webservices"));
@@ -345,7 +345,7 @@ public class DamGeneratorTest {
         Map<String, Object> generatedGroups = (Map<String, Object>) generatedTopologyTemplate.get(DamGenerator.GROUPS);
         Map<String, Object> expectedGroups = (Map<String, Object>) expectedTopologyTemplate.get(DamGenerator.GROUPS);
         testSeaCloudsPolicy(generatedGroups);
-        testMonitoringConfiguration(generatedGroups, expectedGroups);
+        testMonitoringConfiguration(generatedGroups);
 
         assertEquals(generatedGroups.get("operation_Chat"), expectedGroups.get("operation_Chat"));
         assertEquals(generatedGroups.get("operation_MessageDatabase"), expectedGroups.get("operation_MessageDatabase"));
@@ -388,7 +388,7 @@ public class DamGeneratorTest {
         Map<String, Object> generatedGroups = (Map<String, Object>) generatedTopologyTemplate.get(DamGenerator.GROUPS);
         Map<String, Object> expectedGroups = (Map<String, Object>) expectedTopologyTemplate.get(DamGenerator.GROUPS);
         testSeaCloudsPolicy(generatedGroups);
-        testMonitoringConfiguration(generatedGroups, expectedGroups);
+        testMonitoringConfiguration(generatedGroups);
 
         assertEquals(generatedGroups.get("operation_db"), expectedGroups.get("operation_db"));
         assertEquals(generatedGroups.get("operation_tomcat_server"), expectedGroups.get("operation_tomcat_server"));
@@ -435,51 +435,45 @@ public class DamGeneratorTest {
         assertEquals(seacloudsManagementPolicyProperties.get(SeaCloudsManagementPolicyFacade.GRAFANA_PASSWORD), GRAFANA_PASSWORD);
     }
 
-    private void testMonitoringConfiguration(Map<String, Object> generatedGroups, Map<String, Object> expectedGroups) {
-        Map<String, Object> monitoringInformation = (Map<String, Object>) generatedGroups.get("monitoringInformation");
+    @SuppressWarnings("unchecked")
+    private void testMonitoringConfiguration(Map<String, Object> generatedGroups) {
+        Map<String, Object> monitoringInformation = (Map<String, Object>) generatedGroups.get(DamGenerator.MONITOR_INFO_GROUPNAME);
+        Map<String, Object> slaInformation = (Map<String, Object>) generatedGroups.get(DamGenerator.SLA_INFO_GROUPNAME);
         testMonitoringInformation(monitoringInformation);
-        Map<String, Object> slaInformation = (Map<String, Object>) generatedGroups.get("sla_gen_info");
         testSlaInformation(slaInformation);
     }
 
-    private void testSlaInformation(Map<String, Object> slaInformation){
-        assertTrue(slaInformation.containsKey(DamGenerator.POLICIES));
-        List<Map<String, Object>> policies =
-                (List<Map<String, Object>>) slaInformation.get(DamGenerator.POLICIES);
-        assertEquals(policies.size(), 1);
-
-        Map<String, Object> policy = Iterators.getOnlyElement(policies.iterator());
-        Map<String, Object> policyValues = (Map<String, Object> )policy.get("seaclouds.app.information");
-        assertTrue(policyValues.containsKey(DamGenerator.ID));
-        assertFalse(Strings.isBlank((String) policyValues.get(DamGenerator.ID)));
-
-        assertTrue(policyValues.containsKey(DamGenerator.TYPE));
-        assertTrue(Strings.isBlank((String) policyValues.get("seaclouds.policies.app.information")));
-
-        assertTrue(slaInformation.containsKey(DamGenerator.MEMBERS));
-        List<String> members =
-                (List<String>) slaInformation.get(DamGenerator.MEMBERS);
-        assertEquals(members.size(), 1);
-        assertEquals(Iterators.getOnlyElement(members.iterator()), DamGenerator.APPLICATION);
+    private void testMonitoringInformation(Map<String, Object> monitoringInformation){
+        testMonitoringConfigurationPolicy(monitoringInformation,
+                DamGenerator.MONITORING_RULES_POLICY_NAME,
+                DamGenerator.SEACLOUDS_MONITORING_RULES_ID_POLICY);
     }
 
-    private void testMonitoringInformation(Map<String, Object> monitoringInformation){
-        assertTrue(monitoringInformation.containsKey(DamGenerator.POLICIES));
-        List<Map<String, Object>> policies =
-                (List<Map<String, Object>>) monitoringInformation.get(DamGenerator.POLICIES);
-        assertEquals(policies.size(), 1);
+    private void testSlaInformation(Map<String, Object> slaInformation){
+        testMonitoringConfigurationPolicy(slaInformation,
+                DamGenerator.SEACLOUDS_APPLICATION_POLICY_NAME,
+                DamGenerator.SEACLOUDS_APPLICATION_INFORMATION_POLICY_TYPE);
+    }
 
+    @SuppressWarnings("unchecked")
+    private void testMonitoringConfigurationPolicy(Map<String, Object> monitoringConfigurationGroup,
+                                                   String policyId,
+                                                   String policyType){
+        assertTrue(monitoringConfigurationGroup.containsKey(DamGenerator.POLICIES));
+        List<Map<String, Object>> policies =
+                (List<Map<String, Object>>) monitoringConfigurationGroup.get(DamGenerator.POLICIES);
+        assertEquals(policies.size(), 1);
         Map<String, Object> policy = Iterators.getOnlyElement(policies.iterator());
-        Map<String, Object> policyValues = (Map<String, Object> )policy.get("monitoringrules.information.policy");
+        Map<String, Object> policyValues = (Map<String, Object> )policy.get(policyId);
         assertTrue(policyValues.containsKey(DamGenerator.ID));
         assertFalse(Strings.isBlank((String) policyValues.get(DamGenerator.ID)));
 
         assertTrue(policyValues.containsKey(DamGenerator.TYPE));
-        assertTrue(Strings.isBlank((String) policyValues.get("seaclouds.policies.monitoringrules")));
+        assertTrue(Strings.isBlank((String) policyValues.get(policyType)));
 
-        assertTrue(monitoringInformation.containsKey(DamGenerator.MEMBERS));
+        assertTrue(monitoringConfigurationGroup.containsKey(DamGenerator.MEMBERS));
         List<String> members =
-                (List<String>) monitoringInformation.get(DamGenerator.MEMBERS);
+                (List<String>) monitoringConfigurationGroup.get(DamGenerator.MEMBERS);
         assertEquals(members.size(), 1);
         assertEquals(Iterators.getOnlyElement(members.iterator()), DamGenerator.APPLICATION);
     }

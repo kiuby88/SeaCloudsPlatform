@@ -56,8 +56,8 @@ public class DamGenerator {
 
     static Logger log = LoggerFactory.getLogger(DamGenerator.class);
 
-    private static final String SLA_INFO_GROUPNAME = "sla_gen_info";
-    private static final String MONITOR_INFO_GROUPNAME = "monitoringInformation";
+    public static final String SLA_INFO_GROUPNAME = "sla_gen_info";
+    public static final String MONITOR_INFO_GROUPNAME = "monitoringInformation";
 
     public static final String TYPE = "type";
     public static final String CLOUD_FOUNDRY = "CloudFoundry";
