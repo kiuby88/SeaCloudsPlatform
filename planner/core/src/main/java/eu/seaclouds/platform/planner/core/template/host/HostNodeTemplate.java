@@ -14,26 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package eu.seaclouds.platform.planner.core.facade;
+package eu.seaclouds.platform.planner.core.template.host;
 
-import java.util.List;
 import java.util.Map;
 
-public interface NodeTemplateFacade {
+public interface HostNodeTemplate {
 
-    public static final String TYPE = "type";
+    public static final String BROOKLYN_LOCATION = "brooklyn.location";
+    public static final String ADD_BROOKLYN_LOCATION_PEFIX = "add_brooklyn_location_";
+    public static final String MEMBERS = "members";
+    public static final String POLICIES = "policies";
 
-    public Map<String, Object> transform();
 
-    boolean isDeployedOnIaaS();
+    //TODO: should be connected with policies facades
+    public Map<String, Object> getLocationPolicyGroupValues();
 
-    public Map<String, Object> getNodeTypeDefinition();
-
-    public String getModuleType();
-
-    public String getType();
-
-    public String getHostNodeName();
-
-    List<Map<String, Object>> getArtifacts();
+    public String getLocationPolicyGroupName();
 }

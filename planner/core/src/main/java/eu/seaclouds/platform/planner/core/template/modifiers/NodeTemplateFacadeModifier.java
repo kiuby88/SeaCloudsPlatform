@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package eu.seaclouds.platform.planner.core.facade.modifiers;
+package eu.seaclouds.platform.planner.core.template.modifiers;
 
-import eu.seaclouds.platform.planner.core.facade.NodeTemplateFacade;
+import eu.seaclouds.platform.planner.core.template.NodeTemplate;
 
 /**
  * A NodeTemplateFacadeModifier applies a set of changes to an NodeTemplate according to Deployer
@@ -24,7 +24,7 @@ import eu.seaclouds.platform.planner.core.facade.NodeTemplateFacade;
  */
 public interface NodeTemplateFacadeModifier {
 
-    void apply(NodeTemplateFacade entitySpec);
+    void apply(NodeTemplate entitySpec);
 
 }
 

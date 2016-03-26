@@ -21,6 +21,7 @@ import com.google.common.collect.Iterators;
 import com.google.common.io.Resources;
 import eu.seaclouds.monitor.monitoringdamgenerator.MonitoringInfo;
 import eu.seaclouds.platform.planner.core.DamGenerator;
+import eu.seaclouds.platform.planner.core.template.policies.SeaCloudsManagementPolicy;
 import it.polimi.tower4clouds.rules.MonitoringRules;
 import org.apache.brooklyn.util.text.Identifiers;
 import org.apache.brooklyn.util.text.Strings;
@@ -49,7 +50,7 @@ import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
-public class SeaCloudsManagementPolicyFacadeTest {
+public class SeaCloudsManagementPolicyTest {
 
     static Logger log = LoggerFactory.getLogger(DamGenerator.class);
 
@@ -91,8 +92,8 @@ public class SeaCloudsManagementPolicyFacadeTest {
 
     @Test
     public void testSeaCloudsPolicy() {
-        SeaCloudsManagementPolicyFacade policyFacade =
-                new SeaCloudsManagementPolicyFacade.Builder()
+        SeaCloudsManagementPolicy policyFacade =
+                new SeaCloudsManagementPolicy.Builder()
                         .agreementManager(fakeAgreementManager)
                         .slaEndpoint(SLA_ENDPOINT)
                         .t4cEndpoint(MONITOR_ENDPOINT)
@@ -109,39 +110,39 @@ public class SeaCloudsManagementPolicyFacadeTest {
 
         assertNotNull(policyGroup);
         assertEquals(policyGroup.size(), 2);
-        assertNotNull(policyGroup.get(SeaCloudsManagementPolicyFacade.MEMBERS));
-        assertTrue(policyGroup.get(SeaCloudsManagementPolicyFacade.MEMBERS) instanceof List);
+        assertNotNull(policyGroup.get(SeaCloudsManagementPolicy.MEMBERS));
+        assertTrue(policyGroup.get(SeaCloudsManagementPolicy.MEMBERS) instanceof List);
 
-        List members = (List) policyGroup.get(SeaCloudsManagementPolicyFacade.MEMBERS);
+        List members = (List) policyGroup.get(SeaCloudsManagementPolicy.MEMBERS);
         assertTrue(members.isEmpty());
 
-        assertNotNull(policyGroup.get(SeaCloudsManagementPolicyFacade.POLICIES));
-        assertTrue(policyGroup.get(SeaCloudsManagementPolicyFacade.POLICIES) instanceof List);
+        assertNotNull(policyGroup.get(SeaCloudsManagementPolicy.POLICIES));
+        assertTrue(policyGroup.get(SeaCloudsManagementPolicy.POLICIES) instanceof List);
 
         List<Map<String, Object>> policies = (List<Map<String, Object>>) policyGroup
-                .get(SeaCloudsManagementPolicyFacade.POLICIES);
+                .get(SeaCloudsManagementPolicy.POLICIES);
 
         assertEquals(policies.size(), 1);
 
         Map<String, Object> policy = Iterators.getOnlyElement(policies.iterator());
-        assertTrue(policy.containsKey(SeaCloudsManagementPolicyFacade
+        assertTrue(policy.containsKey(SeaCloudsManagementPolicy
                 .SEACLOUDS_APPLICATION_CONFIGURATION_POLICY));
         Map<String, Object> policyConfiguration = (Map<String, Object>) policy
-                .get(SeaCloudsManagementPolicyFacade.SEACLOUDS_APPLICATION_CONFIGURATION_POLICY);
+                .get(SeaCloudsManagementPolicy.SEACLOUDS_APPLICATION_CONFIGURATION_POLICY);
 
         assertEquals(policyConfiguration.get(DamGenerator.TYPE),
-                SeaCloudsManagementPolicyFacade.SEACLOUDS_MANAGEMENT_POLICY);
-        assertEquals(policyConfiguration.get(SeaCloudsManagementPolicyFacade.SLA_ENDPOINT), SLA_ENDPOINT);
-        assertFalse(Strings.isBlank((String) policyConfiguration.get(SeaCloudsManagementPolicyFacade.SLA_AGREEMENT)));
-        assertEquals(policyConfiguration.get(SeaCloudsManagementPolicyFacade.T4C_ENDPOINT), MONITOR_ENDPOINT);
-        assertFalse(Strings.isBlank((String) policyConfiguration.get(SeaCloudsManagementPolicyFacade.T4C_RULES)));
-        assertEquals(policyConfiguration.get(SeaCloudsManagementPolicyFacade.INFLUXDB_ENDPOINT), INFLUXDB_ENDPOINT);
-        assertEquals(policyConfiguration.get(SeaCloudsManagementPolicyFacade.INFLUXDB_DATABASE), INFLUXDB_DATABASE);
-        assertEquals(policyConfiguration.get(SeaCloudsManagementPolicyFacade.INFLUXDB_USERNAME), INFLUXDB_USERNAME);
-        assertEquals(policyConfiguration.get(SeaCloudsManagementPolicyFacade.INFLUXDB_PASSWORD), INFLUXDB_PASSWORD);
-        assertEquals(policyConfiguration.get(SeaCloudsManagementPolicyFacade.GRAFANA_ENDPOINT), GRAFANA_ENDPOINT);
-        assertEquals(policyConfiguration.get(SeaCloudsManagementPolicyFacade.GRAFANA_USERNAME), GRAFANA_USERNAME);
-        assertEquals(policyConfiguration.get(SeaCloudsManagementPolicyFacade.GRAFANA_PASSWORD), GRAFANA_PASSWORD);
+                SeaCloudsManagementPolicy.SEACLOUDS_MANAGEMENT_POLICY);
+        assertEquals(policyConfiguration.get(SeaCloudsManagementPolicy.SLA_ENDPOINT), SLA_ENDPOINT);
+        assertFalse(Strings.isBlank((String) policyConfiguration.get(SeaCloudsManagementPolicy.SLA_AGREEMENT)));
+        assertEquals(policyConfiguration.get(SeaCloudsManagementPolicy.T4C_ENDPOINT), MONITOR_ENDPOINT);
+        assertFalse(Strings.isBlank((String) policyConfiguration.get(SeaCloudsManagementPolicy.T4C_RULES)));
+        assertEquals(policyConfiguration.get(SeaCloudsManagementPolicy.INFLUXDB_ENDPOINT), INFLUXDB_ENDPOINT);
+        assertEquals(policyConfiguration.get(SeaCloudsManagementPolicy.INFLUXDB_DATABASE), INFLUXDB_DATABASE);
+        assertEquals(policyConfiguration.get(SeaCloudsManagementPolicy.INFLUXDB_USERNAME), INFLUXDB_USERNAME);
+        assertEquals(policyConfiguration.get(SeaCloudsManagementPolicy.INFLUXDB_PASSWORD), INFLUXDB_PASSWORD);
+        assertEquals(policyConfiguration.get(SeaCloudsManagementPolicy.GRAFANA_ENDPOINT), GRAFANA_ENDPOINT);
+        assertEquals(policyConfiguration.get(SeaCloudsManagementPolicy.GRAFANA_USERNAME), GRAFANA_USERNAME);
+        assertEquals(policyConfiguration.get(SeaCloudsManagementPolicy.GRAFANA_PASSWORD), GRAFANA_PASSWORD);
     }
 
     private MonitoringRules getEmptyMonitoringRulesFromResource(String resourcePath) {

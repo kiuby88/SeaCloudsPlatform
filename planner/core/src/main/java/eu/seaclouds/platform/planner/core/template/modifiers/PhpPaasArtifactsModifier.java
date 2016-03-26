@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package eu.seaclouds.platform.planner.core.facade.modifiers;
+package eu.seaclouds.platform.planner.core.template.modifiers;
 
 
-import eu.seaclouds.platform.planner.core.facade.NodeTemplateFacade;
+import eu.seaclouds.platform.planner.core.template.NodeTemplate;
 
 import java.util.List;
 import java.util.Map;
@@ -29,20 +29,20 @@ public class PhpPaasArtifactsModifier implements NodeTemplateFacadeModifier {
     private static final String TARBALL_URL_ARTIFACT = "tarball.url";
     private static final String APPLICATION_URL_ARTIFACT = "application-url";
 
-    private boolean isApplicable(NodeTemplateFacade nodeTemplateFacade) {
-        return (!nodeTemplateFacade.isDeployedOnIaaS())
-                && nodeTemplateFacade.getType().equals(TARGET_TYPE);
+    private boolean isApplicable(NodeTemplate nodeTemplate) {
+        return (!nodeTemplate.isDeployedOnIaaS())
+                && nodeTemplate.getType().equals(TARGET_TYPE);
     }
 
     @Override
-    public void apply(NodeTemplateFacade nodeTemplateFacade) {
-        if (isApplicable(nodeTemplateFacade)) {
-            modifyTargetArtifactProperty(nodeTemplateFacade);
+    public void apply(NodeTemplate nodeTemplate) {
+        if (isApplicable(nodeTemplate)) {
+            modifyTargetArtifactProperty(nodeTemplate);
         }
     }
 
-    private void modifyTargetArtifactProperty(NodeTemplateFacade nodeTemplateFacade) {
-        List<Map<String, Object>> artifacts = nodeTemplateFacade.getArtifacts();
+    private void modifyTargetArtifactProperty(NodeTemplate nodeTemplate) {
+        List<Map<String, Object>> artifacts = nodeTemplate.getArtifacts();
         for (Map<String, Object> artifact : artifacts) {
             modifyGitUrlArtifact(artifact);
             modifyTarballUrlArtifact(artifact);

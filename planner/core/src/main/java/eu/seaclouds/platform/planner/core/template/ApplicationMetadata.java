@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package eu.seaclouds.platform.planner.core.facade;
+package eu.seaclouds.platform.planner.core.template;
 
 import org.apache.brooklyn.util.collections.MutableList;
 import org.apache.brooklyn.util.text.Identifiers;
@@ -23,7 +23,7 @@ import org.apache.brooklyn.util.text.Strings;
 import java.util.List;
 import java.util.Map;
 
-public class ApplicationMetadataFacade {
+public class ApplicationMetadata {
 
     public static final String IMPORTS = "imports";
     public static final String TOSCA_NORMATIVE_TYPES = "tosca-normative-types";
@@ -40,7 +40,7 @@ public class ApplicationMetadataFacade {
     private String templateVersion;
     private List<String> imports;
 
-    public ApplicationMetadataFacade(Map<String, Object> template) {
+    public ApplicationMetadata(Map<String, Object> template) {
         this.template = template;
         init();
     }

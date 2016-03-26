@@ -14,17 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package eu.seaclouds.platform.planner.core.facade.host;
+package eu.seaclouds.platform.planner.core.template.host;
 
-import eu.seaclouds.platform.planner.core.facade.AbstractNodeTemplateFacade;
+import eu.seaclouds.platform.planner.core.template.AbstractNodeTemplate;
 import org.apache.brooklyn.util.collections.MutableMap;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
 
-public abstract class AbstractHostNodeTemplate extends AbstractNodeTemplateFacade
-        implements HostNodeTemplateFacade {
+public abstract class AbstractHostNodeTemplate extends AbstractNodeTemplate
+        implements HostNodeTemplate {
 
 
     public AbstractHostNodeTemplate(Map<String, Object> applicationTemplate, String nodeTemplateId) {

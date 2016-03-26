@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package eu.seaclouds.platform.planner.core.facade.host;
+package eu.seaclouds.platform.planner.core.template.host;
 
 import com.google.common.collect.ImmutableList;
 import org.apache.brooklyn.util.collections.MutableMap;
@@ -22,7 +22,7 @@ import org.apache.brooklyn.util.collections.MutableMap;
 import java.util.List;
 import java.util.Map;
 
-public class ComputeNodeTemplateFacade extends AbstractHostNodeTemplate {
+public class ComputeNodeTemplate extends AbstractHostNodeTemplate {
 
     public static final String JCLOUDS = "jclouds";
     public static final String LOCATION = "location";
@@ -32,7 +32,7 @@ public class ComputeNodeTemplateFacade extends AbstractHostNodeTemplate {
     private static final List<String> SUPPORTED_TYPES =
             ImmutableList.of("tosca.nodes.Compute", "seaclouds.nodes.Compute");
 
-    public ComputeNodeTemplateFacade(Map<String, Object> applicationTemplate, String nodeTemplateId) {
+    public ComputeNodeTemplate(Map<String, Object> applicationTemplate, String nodeTemplateId) {
         super(applicationTemplate, nodeTemplateId);
     }
 

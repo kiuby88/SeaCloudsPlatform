@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package eu.seaclouds.platform.planner.core.facade.policies;
+package eu.seaclouds.platform.planner.core.template.policies;
 
 import com.google.common.collect.ImmutableList;
 import eu.seaclouds.monitor.monitoringdamgenerator.MonitoringInfo;
@@ -31,9 +31,9 @@ import javax.xml.bind.Marshaller;
 import java.io.StringWriter;
 import java.util.Map;
 
-public class SeaCloudsManagementPolicyFacade {
+public class SeaCloudsManagementPolicy {
 
-    static Logger log = LoggerFactory.getLogger(SeaCloudsManagementPolicyFacade.class);
+    static Logger log = LoggerFactory.getLogger(SeaCloudsManagementPolicy.class);
 
     public static final String MEMBERS = "members";
     public static final String POLICIES = "policies";
@@ -68,7 +68,7 @@ public class SeaCloudsManagementPolicyFacade {
     private DamGenerator.SlaAgreementManager agreementManager;
 
 
-    public SeaCloudsManagementPolicyFacade(Builder builder) {
+    public SeaCloudsManagementPolicy(Builder builder) {
         slaEndpoint = builder.slaEndpoint;
         t4cEndpoint = builder.t4cEndpoint;
         influxdbEndpoint = builder.influxdbEndpoint;
@@ -204,8 +204,8 @@ public class SeaCloudsManagementPolicyFacade {
             return this;
         }
 
-        public SeaCloudsManagementPolicyFacade build() {
-            return new SeaCloudsManagementPolicyFacade(this);
+        public SeaCloudsManagementPolicy build() {
+            return new SeaCloudsManagementPolicy(this);
         }
     }
 

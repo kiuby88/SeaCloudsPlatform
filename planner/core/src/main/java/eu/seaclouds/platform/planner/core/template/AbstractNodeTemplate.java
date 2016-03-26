@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package eu.seaclouds.platform.planner.core.facade;
+package eu.seaclouds.platform.planner.core.template;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Resources;
 import eu.seaclouds.platform.planner.core.DamGenerator;
-import eu.seaclouds.platform.planner.core.facade.host.ComputeNodeTemplateFacade;
-import eu.seaclouds.platform.planner.core.facade.modifiers.JavaPaasArtifactsModifier;
-import eu.seaclouds.platform.planner.core.facade.modifiers.PhpPaasArtifactsModifier;
+import eu.seaclouds.platform.planner.core.template.host.ComputeNodeTemplate;
+import eu.seaclouds.platform.planner.core.template.modifiers.JavaPaasArtifactsModifier;
+import eu.seaclouds.platform.planner.core.template.modifiers.PhpPaasArtifactsModifier;
 import eu.seaclouds.platform.planner.core.resolver.DeployerTypesResolver;
 import org.apache.brooklyn.util.collections.MutableMap;
 import org.slf4j.Logger;
@@ -33,9 +33,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class AbstractNodeTemplateFacade implements NodeTemplateFacade {
+public class AbstractNodeTemplate implements NodeTemplate {
 
-    static Logger log = LoggerFactory.getLogger(AbstractNodeTemplateFacade.class);
+    static Logger log = LoggerFactory.getLogger(AbstractNodeTemplate.class);
 
     private static final String REQUIREMENTS = "requirements";
     private static final String INSTANCES_POC = "instancesPOC";
@@ -63,8 +63,8 @@ public class AbstractNodeTemplateFacade implements NodeTemplateFacade {
     private Map<String, Object> topologyTemplate;
     private Map<String, Object> nodeTemplates;
 
-    public AbstractNodeTemplateFacade(Map<String, Object> applicationTemplate,
-                                      String nodeTemplateId) {
+    public AbstractNodeTemplate(Map<String, Object> applicationTemplate,
+                                String nodeTemplateId) {
         this.applicationTemplate = applicationTemplate;
         this.nodeTemplateId = nodeTemplateId;
         init();
@@ -241,7 +241,7 @@ public class AbstractNodeTemplateFacade implements NodeTemplateFacade {
     }
 
     private boolean isAnIaasType(String type) {
-        return ComputeNodeTemplateFacade.isSupported(type);
+        return ComputeNodeTemplate.isSupported(type);
     }
 
     private boolean hostDeployedOnIaaS() {

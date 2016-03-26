@@ -14,31 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package eu.seaclouds.platform.planner.core.facade;
+package eu.seaclouds.platform.planner.core.template;
 
 import eu.seaclouds.platform.planner.core.DamGenerator;
-import eu.seaclouds.platform.planner.core.facade.host.ComputeNodeTemplateFacade;
-import eu.seaclouds.platform.planner.core.facade.host.PlatformNodeTemplateFacade;
+import eu.seaclouds.platform.planner.core.template.host.ComputeNodeTemplate;
+import eu.seaclouds.platform.planner.core.template.host.PlatformNodeTemplate;
 
 import java.util.Map;
 
 public class NodeTemplateFactory {
 
-    public static NodeTemplateFacade createNodeTemplate(Map<String, Object> applicationTemplate,
+    public static NodeTemplate createNodeTemplate(Map<String, Object> applicationTemplate,
                                                         String nodeTemplateId) {
 
         Map<String, Object> topologyTemplate = (Map<String, Object>) applicationTemplate.get(DamGenerator.TOPOLOGY_TEMPLATE);
         Map<String, Object> nodeTemplates = (Map<String, Object>) topologyTemplate.get(DamGenerator.NODE_TEMPLATES);
         Map<String, Object> module = (Map<String, Object>) nodeTemplates.get(nodeTemplateId);
 
-        String moduleType = (String) module.get(NodeTemplateFacade.TYPE);
+        String moduleType = (String) module.get(NodeTemplate.TYPE);
 
-        if (ComputeNodeTemplateFacade.isSupported(moduleType)) {
-            return new ComputeNodeTemplateFacade(applicationTemplate, nodeTemplateId);
-        } else if (PlatformNodeTemplateFacade.isSupported(moduleType)) {
-            return new PlatformNodeTemplateFacade(applicationTemplate, nodeTemplateId);
+        if (ComputeNodeTemplate.isSupported(moduleType)) {
+            return new ComputeNodeTemplate(applicationTemplate, nodeTemplateId);
+        } else if (PlatformNodeTemplate.isSupported(moduleType)) {
+            return new PlatformNodeTemplate(applicationTemplate, nodeTemplateId);
         } else {
-            return new AbstractNodeTemplateFacade(applicationTemplate, nodeTemplateId);
+            return new AbstractNodeTemplate(applicationTemplate, nodeTemplateId);
         }
 
     }

@@ -18,8 +18,8 @@ package eu.seaclouds.platform.planner.core;
 
 import com.google.common.collect.Iterators;
 import com.google.common.io.Resources;
-import eu.seaclouds.platform.planner.core.facade.ApplicationMetadataFacade;
-import eu.seaclouds.platform.planner.core.facade.policies.SeaCloudsManagementPolicyFacade;
+import eu.seaclouds.platform.planner.core.template.ApplicationMetadata;
+import eu.seaclouds.platform.planner.core.template.policies.SeaCloudsManagementPolicy;
 import org.apache.brooklyn.util.text.Strings;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -377,25 +377,25 @@ public class DamGeneratorTest {
         assertTrue(policies.get(0) instanceof Map);
         Map<String, Object> seacloudsManagementPolicy = (Map<String, Object>) policies.get(0);
         assertEquals(seacloudsManagementPolicy.size(), 1);
-        assertTrue(seacloudsManagementPolicy.containsKey(SeaCloudsManagementPolicyFacade.SEACLOUDS_APPLICATION_CONFIGURATION_POLICY));
+        assertTrue(seacloudsManagementPolicy.containsKey(SeaCloudsManagementPolicy.SEACLOUDS_APPLICATION_CONFIGURATION_POLICY));
 
         Map<String, Object> seacloudsManagementPolicyProperties = (Map<String, Object>)
-                seacloudsManagementPolicy.get(SeaCloudsManagementPolicyFacade.SEACLOUDS_APPLICATION_CONFIGURATION_POLICY);
+                seacloudsManagementPolicy.get(SeaCloudsManagementPolicy.SEACLOUDS_APPLICATION_CONFIGURATION_POLICY);
         assertEquals(seacloudsManagementPolicyProperties.size(), 12);
 
         assertEquals(seacloudsManagementPolicyProperties.get(DamGenerator.TYPE),
-                SeaCloudsManagementPolicyFacade.SEACLOUDS_MANAGEMENT_POLICY);
-        assertEquals(seacloudsManagementPolicyProperties.get(SeaCloudsManagementPolicyFacade.SLA_ENDPOINT), SLA_ENDPOINT);
-        assertFalse(Strings.isBlank((String) seacloudsManagementPolicyProperties.get(SeaCloudsManagementPolicyFacade.SLA_AGREEMENT)));
-        assertEquals(seacloudsManagementPolicyProperties.get(SeaCloudsManagementPolicyFacade.T4C_ENDPOINT), getMonitorEndpoint());
-        assertFalse(Strings.isBlank((String) seacloudsManagementPolicyProperties.get(SeaCloudsManagementPolicyFacade.T4C_RULES)));
-        assertEquals(seacloudsManagementPolicyProperties.get(SeaCloudsManagementPolicyFacade.INFLUXDB_ENDPOINT), getInfluxDbEndpoint());
-        assertEquals(seacloudsManagementPolicyProperties.get(SeaCloudsManagementPolicyFacade.INFLUXDB_DATABASE), INFLUXDB_DATABASE);
-        assertEquals(seacloudsManagementPolicyProperties.get(SeaCloudsManagementPolicyFacade.INFLUXDB_USERNAME), INFLUXDB_USERNAME);
-        assertEquals(seacloudsManagementPolicyProperties.get(SeaCloudsManagementPolicyFacade.INFLUXDB_PASSWORD), INFLUXDB_PASSWORD);
-        assertEquals(seacloudsManagementPolicyProperties.get(SeaCloudsManagementPolicyFacade.GRAFANA_ENDPOINT), GRAFANA_ENDPOINT);
-        assertEquals(seacloudsManagementPolicyProperties.get(SeaCloudsManagementPolicyFacade.GRAFANA_USERNAME), GRAFANA_USERNAME);
-        assertEquals(seacloudsManagementPolicyProperties.get(SeaCloudsManagementPolicyFacade.GRAFANA_PASSWORD), GRAFANA_PASSWORD);
+                SeaCloudsManagementPolicy.SEACLOUDS_MANAGEMENT_POLICY);
+        assertEquals(seacloudsManagementPolicyProperties.get(SeaCloudsManagementPolicy.SLA_ENDPOINT), SLA_ENDPOINT);
+        assertFalse(Strings.isBlank((String) seacloudsManagementPolicyProperties.get(SeaCloudsManagementPolicy.SLA_AGREEMENT)));
+        assertEquals(seacloudsManagementPolicyProperties.get(SeaCloudsManagementPolicy.T4C_ENDPOINT), getMonitorEndpoint());
+        assertFalse(Strings.isBlank((String) seacloudsManagementPolicyProperties.get(SeaCloudsManagementPolicy.T4C_RULES)));
+        assertEquals(seacloudsManagementPolicyProperties.get(SeaCloudsManagementPolicy.INFLUXDB_ENDPOINT), getInfluxDbEndpoint());
+        assertEquals(seacloudsManagementPolicyProperties.get(SeaCloudsManagementPolicy.INFLUXDB_DATABASE), INFLUXDB_DATABASE);
+        assertEquals(seacloudsManagementPolicyProperties.get(SeaCloudsManagementPolicy.INFLUXDB_USERNAME), INFLUXDB_USERNAME);
+        assertEquals(seacloudsManagementPolicyProperties.get(SeaCloudsManagementPolicy.INFLUXDB_PASSWORD), INFLUXDB_PASSWORD);
+        assertEquals(seacloudsManagementPolicyProperties.get(SeaCloudsManagementPolicy.GRAFANA_ENDPOINT), GRAFANA_ENDPOINT);
+        assertEquals(seacloudsManagementPolicyProperties.get(SeaCloudsManagementPolicy.GRAFANA_USERNAME), GRAFANA_USERNAME);
+        assertEquals(seacloudsManagementPolicyProperties.get(SeaCloudsManagementPolicy.GRAFANA_PASSWORD), GRAFANA_PASSWORD);
     }
 
     @SuppressWarnings("unchecked")
@@ -452,18 +452,18 @@ public class DamGeneratorTest {
     @SuppressWarnings("unchecked")
     public void testMetadataTemplate(Map<String, Object> template) throws Exception {
         assertNotNull(template);
-        assertNotNull(template.get(ApplicationMetadataFacade.TEMPLATE_NAME));
-        assertTrue(((String) template.get(ApplicationMetadataFacade.TEMPLATE_NAME)).contains(ApplicationMetadataFacade.TEMPLATE_NAME_PREFIX));
+        assertNotNull(template.get(ApplicationMetadata.TEMPLATE_NAME));
+        assertTrue(((String) template.get(ApplicationMetadata.TEMPLATE_NAME)).contains(ApplicationMetadata.TEMPLATE_NAME_PREFIX));
 
-        assertNotNull(template.get(ApplicationMetadataFacade.TEMPLATE_VERSION));
-        assertTrue(((String) template.get(ApplicationMetadataFacade.TEMPLATE_VERSION)).contains(ApplicationMetadataFacade.DEFAULT_TEMPLATE_VERSION));
+        assertNotNull(template.get(ApplicationMetadata.TEMPLATE_VERSION));
+        assertTrue(((String) template.get(ApplicationMetadata.TEMPLATE_VERSION)).contains(ApplicationMetadata.DEFAULT_TEMPLATE_VERSION));
 
-        assertNotNull(template.get(ApplicationMetadataFacade.IMPORTS));
-        assertTrue(template.get(ApplicationMetadataFacade.IMPORTS) instanceof List);
-        List imports = (List) template.get(ApplicationMetadataFacade.IMPORTS);
+        assertNotNull(template.get(ApplicationMetadata.IMPORTS));
+        assertTrue(template.get(ApplicationMetadata.IMPORTS) instanceof List);
+        List imports = (List) template.get(ApplicationMetadata.IMPORTS);
         assertEquals(imports.size(), 2);
-        assertTrue(imports.contains(ApplicationMetadataFacade.TOSCA_NORMATIVE_TYPES + ":" + ApplicationMetadataFacade.TOSCA_NORMATIVE_TYPES_VERSION));
-        assertTrue(imports.contains(ApplicationMetadataFacade.SEACLOUDS_NODE_TYPES + ":" + ApplicationMetadataFacade.SEACLOUDS_NODE_TYPES_VERSION));
+        assertTrue(imports.contains(ApplicationMetadata.TOSCA_NORMATIVE_TYPES + ":" + ApplicationMetadata.TOSCA_NORMATIVE_TYPES_VERSION));
+        assertTrue(imports.contains(ApplicationMetadata.SEACLOUDS_NODE_TYPES + ":" + ApplicationMetadata.SEACLOUDS_NODE_TYPES_VERSION));
     }
 
 }
