@@ -20,6 +20,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.io.Resources;
 import eu.seaclouds.platform.planner.core.DamGenerator;
 import eu.seaclouds.platform.planner.core.facade.host.ComputeNodeTemplateFacade;
+import eu.seaclouds.platform.planner.core.facade.modifiers.JavaPaasArtifactsModifier;
 import eu.seaclouds.platform.planner.core.facade.modifiers.PhpPaasArtifactsModifier;
 import eu.seaclouds.platform.planner.core.resolver.DeployerTypesResolver;
 import org.apache.brooklyn.util.collections.MutableMap;
@@ -45,7 +46,6 @@ public class AbstractNodeTemplateFacade implements NodeTemplateFacade {
     private static final String TOPOLOGY_TEMPLATE = "topology_template";
     private static final String NODE_TEMPLATES = "node_templates";
     private static final String DERIVED_FROM = "derived_from";
-
 
     public static final String BROOKLYN_IAAS_TYPES_MAPPING =
             "mapping/brooklyn-iaas-types-mapping.yaml";
@@ -103,6 +103,8 @@ public class AbstractNodeTemplateFacade implements NodeTemplateFacade {
     private void applyModifiers() {
         PhpPaasArtifactsModifier phpPaasArtifactsModifier = new PhpPaasArtifactsModifier();
         phpPaasArtifactsModifier.apply(this);
+        JavaPaasArtifactsModifier javaPaasArtifactsModifier = new JavaPaasArtifactsModifier();
+        javaPaasArtifactsModifier.apply(this);
     }
 
     private void initNodeTypes() {
