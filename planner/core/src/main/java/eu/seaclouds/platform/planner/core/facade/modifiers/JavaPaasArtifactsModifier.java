@@ -50,7 +50,7 @@ public class JavaPaasArtifactsModifier implements NodeTemplateFacadeModifier {
     private void modifyWarsRootArtifact(Map<String, Object> artifact) {
         if (artifact.containsKey(WARS_ROOT_ARTIFACT)) {
             String targetUrlArtifact = (String) artifact.get(WARS_ROOT_ARTIFACT);
-            artifact.remove(APPLICATION_URL_ARTIFACT);
+            artifact.remove(WARS_ROOT_ARTIFACT);
             addApplicationUrlArtifact(artifact, targetUrlArtifact);
         }
     }

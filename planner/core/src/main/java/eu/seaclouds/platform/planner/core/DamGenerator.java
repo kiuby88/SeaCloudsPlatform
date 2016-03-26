@@ -161,10 +161,10 @@ public class DamGenerator {
     }
 
     private void customize() {
+        normalizePlatformNodeTemplates();
         relationManagement();
         manageNodeTypes();
         manageGroups();
-        normalizePlatformNodeTemplates();
     }
 
     private void addSeaCloudsPolicy(MonitoringInfo monitoringInfo, String applicationInfoId) {
@@ -217,7 +217,7 @@ public class DamGenerator {
         Map<String, Object> topologyTemplate = (Map<String, Object>) template.get(TOPOLOGY_TEMPLATE);
         Map<String, Object> nodeTemplates = (Map<String, Object>) topologyTemplate.get(NODE_TEMPLATES);
 
-        Map<String, Object> groups = (Map<String, Object>) topologyTemplate.get(GROUPS);
+        Map<String, Object> groups = (Map<String, Object>) template.get(GROUPS);
 
         for (Map.Entry<String, HostNodeTemplateFacade> entry : hostNodeTemplateFacades.entrySet()) {
             HostNodeTemplateFacade hostNodeTemplateFacade = entry.getValue();
@@ -399,11 +399,15 @@ public class DamGenerator {
             List<Map<String, Object>> fixedRequirements = MutableList.of();
             if (requirements != null) {
                 for (Map<String, Object> requirement : requirements) {
-                    if (requirement.containsKey("host")) {
+                    if (requirement.containsKey(HOST)) {
                         fixedRequirements.add(requirement);
                     }
                 }
-                nodeTemplate.put(REQUIREMENTS, fixedRequirements);
+                if(fixedRequirements.isEmpty()){
+                    nodeTemplate.remove(REQUIREMENTS);
+                } else {
+                    nodeTemplate.put(REQUIREMENTS, fixedRequirements);
+                }
             }
         }
     }
