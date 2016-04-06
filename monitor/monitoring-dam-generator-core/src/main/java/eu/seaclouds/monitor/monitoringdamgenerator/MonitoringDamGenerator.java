@@ -22,11 +22,9 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-
-
 
 public class MonitoringDamGenerator {
     private static final Logger logger = LoggerFactory
@@ -100,8 +98,7 @@ public class MonitoringDamGenerator {
                 logger.info("Generating monitoring information for module "
                         + module.getModuleName());
 
-                if(module.getHost().getDeploymentType().equals(DeploymentType.IaaS) &
-                        !module.getType().toLowerCase().contains("database")){
+                if(!module.getType().toLowerCase().contains("database")){
                  
                     module.addApplicationMonitoringRules(arg.generateMonitoringRules(module));
                     
@@ -172,24 +169,46 @@ public class MonitoringDamGenerator {
     private MonitoringInfo buildMonitoringInfo(List<Module> modules, String originalAdp){
         MonitoringRules applicationRules = new MonitoringRules();
         String enrichedAdp;
-        
-        for(Module module : modules){
-            applicationRules.getMonitoringRules().addAll(module.getApplicationMonitoringRules().getMonitoringRules());
-        }
-        
         Yaml yamlApp = new Yaml();
-        Map<String, Object> appMap = (Map<String, Object>) yamlApp.load(originalAdp);
         
+        Map<String, Object> appMap = (Map<String, Object>) yamlApp.load(originalAdp);
         Map<String, Object> topology = (Map<String, Object>) appMap
                 .get("topology_template");
         Map<String, Object> nodeTemplates = (Map<String, Object>) topology.get("node_templates");
         
+        Map<String, String> variablesToSet;
+        Map<String, Object> currentNodeTemplate;
+        Map<String, Object> properties;
+        Map<String, Object> currentVars;
+        
+        for(Module module : modules){
+            applicationRules.getMonitoringRules().addAll(module.getApplicationMonitoringRules().getMonitoringRules());
+        }
 
         for(Module module: modules){
             for(Map<String, Object> dataCollector: module.getDataCollector()){
                 for(String id: dataCollector.keySet()){
                     nodeTemplates.put(id, dataCollector.get(id));
                 }
+            }
+
+            variablesToSet = module.getMonitoringEnvVars();
+            currentNodeTemplate = (Map<String, Object>) nodeTemplates.get(module.getModuleName());
+            properties = (Map<String, Object>) currentNodeTemplate.get("properties");
+            
+            if(currentNodeTemplate.get("properties") != null){
+                currentVars = (Map<String, Object>) properties.get("env");
+                if(currentVars != null){
+                    for(String variable : variablesToSet.keySet()){
+                        currentVars.put(variable, variablesToSet.get(variable));
+                    }     
+                } else {
+                    properties.put("env", module.getMonitoringEnvVars());
+                }
+            } else if (!variablesToSet.isEmpty()){
+                properties = new HashMap<String, Object>();
+                properties.put("env", module.getMonitoringEnvVars());
+                currentNodeTemplate.put("properties", properties);
             }
         }
         
