@@ -1,0 +1,102 @@
+tosca_definitions_version: tosca_simple_yaml_1_0_0_wd03
+template_name: seaclouds.app.AUYU7bg5
+template_version: 1.0.0-SNAPSHOT
+description: nuro-paas-cf
+imports:
+- tosca-normative-types:1.0.0.wd06-SNAPSHOT
+- seaclouds-types:0.8.0-SNAPSHOT
+
+topology_template:
+  node_templates:
+
+    php-api:
+      type: org.apache.brooklyn.entity.cloudfoundry.webapp.php.PhpCloudFoundryPaasWebApp
+      properties:
+        language: PHP
+        autoscale: false
+        application-url: "https://s3-us-west-2.amazonaws.com/seaclouds-usescases-artifacts/php/paas/splitted/nuro-api.zip"
+      requirements:
+      - dbConnection:
+          node: db
+          relationship: brooklyn.relationships.Configure
+          properties:
+            prop.collection: env
+            prop.name: db_connection_uri
+            prop.value: $brooklyn:formatString("mysql://%s:%s@%s:%s/%s", "brooklyn", "br00k11n", component("db").attributeWhenReady("host.address"), component("db").attributeWhenReady("mysql.port"), "database1")
+
+
+    php-gui:
+      type: org.apache.brooklyn.entity.cloudfoundry.webapp.php.PhpCloudFoundryPaasWebApp
+      properties:
+        language: PHP
+        autoscale: false
+        application-url: "https://s3-us-west-2.amazonaws.com/seaclouds-usescases-artifacts/php/paas/splitted/nuro-gui.zip"
+      requirements:
+      - dbConnection:
+          node: db
+          relationship: brooklyn.relationships.Configure
+          properties:
+            prop.collection: env
+            prop.name: db_connection_uri
+            prop.value: $brooklyn:formatString("mysql://%s:%s@%s:%s/%s", "brooklyn", "br00k11n", component("db").attributeWhenReady("host.address"), component("db").attributeWhenReady("mysql.port"), "database1")
+      - endpoint_configuration:
+          node: php-api
+          relationship: brooklyn.relationships.Configure
+          properties:
+            prop.collection: env
+            prop.name: nuro_api_uri
+            prop.value: $brooklyn:component("php-api").attributeWhenReady("webapp.url")
+
+
+    db:
+      type: org.apache.brooklyn.entity.database.mysql.MySqlNode
+      requirements:
+      - host: Amazon_EC2_c3_2xlarge_ap_southeast_2
+      properties:
+        db_name: database1
+        db_user: brooklyn
+        db_password: br00k11n
+        autoscale: false
+        mysql_version:
+          constraints:
+          - greater_or_equal: '5'
+          - less_or_equal: '5.6'
+        creationScriptUrl: https://www.dropbox.com/s/rp7owcgyhaa692f/create.sql?dl=1
+
+    Amazon_EC2_c3_2xlarge_ap_southeast_2:
+      type: tosca.nodes.Compute
+      properties:
+        num_cpus: 8
+        country: Australia
+        cost: 0.47
+        city: SYDNEY
+        resource_type: compute
+        disk_size: 160
+        availability: 0.9995
+        performance: 173
+        hardwareId: c3.2xlarge
+        disk_type: ssd
+        location: aws-ec2
+        num_disks: 2
+        region: ap-southeast-2
+        ram: 15
+
+  groups:
+
+    add_brooklyn_location_Amazon_EC2_c3_2xlarge_ap_southeast_2:
+      members:
+      - Amazon_EC2_c3_2xlarge_ap_southeast_2
+      policies:
+      - brooklyn.location: aws-ec2:us-west-2
+
+    add_brooklyn_location_php:
+      members:
+      - php-api
+      - php-gui
+      policies:
+      - brooklyn.location: cloudfoundry-instance
+
+
+
+
+
