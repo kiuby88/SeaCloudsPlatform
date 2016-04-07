@@ -237,10 +237,11 @@ public class DamGeneratorTest {
         Map<String, Object> generatedNodeTemplates = (Map<String, Object>) generatedTopologyTemplate.get(DamGenerator.NODE_TEMPLATES);
         Map<String, Object> expectedNodeTemplates = (Map<String, Object>) expectedTopologyTemplate.get(DamGenerator.NODE_TEMPLATES);
 
-        assertEquals(generatedNodeTemplates.size(), 6);
+        assertEquals(generatedNodeTemplates.size(), 7);
 
         assertEquals(generatedNodeTemplates.get("nuro-gui"), expectedNodeTemplates.get("nuro-gui"));
         assertEquals(generatedNodeTemplates.get("nuro-api"), expectedNodeTemplates.get("nuro-api"));
+        assertEquals(generatedNodeTemplates.get("nuro-pma"), expectedNodeTemplates.get("nuro-pma"));
 
         assertEquals(generatedNodeTemplates.get("db"), expectedNodeTemplates.get("db"));
         assertEquals(generatedNodeTemplates.get("modacloudsDc_db"), expectedNodeTemplates.get("modacloudsDc_db"));
@@ -264,6 +265,7 @@ public class DamGeneratorTest {
 
         assertEquals(generatedGroups.get("add_brooklyn_location_nuro-api"), expectedGroups.get("add_brooklyn_location_nuro-api"));
         assertEquals(generatedGroups.get("add_brooklyn_location_nuro-gui"), expectedGroups.get("add_brooklyn_location_nuro-gui"));
+        assertEquals(generatedGroups.get("add_brooklyn_location_nuro-pma"), expectedGroups.get("add_brooklyn_location_nuro-pma"));
     }
 
     @Test

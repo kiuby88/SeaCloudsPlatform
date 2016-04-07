@@ -1,5 +1,8 @@
 tosca_definitions_version: tosca_simple_yaml_1_0_0_wd03
+template_name: seaclouds.app.GBu7U1T1
+template_version: 1.0.0-SNAPSHOT
 description: splitted-nuro-app-paas
+
 imports:
 - tosca-normative-types:1.0.0.wd06-SNAPSHOT
 - seaclouds-types:0.8.0-SNAPSHOT
@@ -102,6 +105,20 @@ topology_template:
         autoscale: false
         application-url: https://s3-us-west-2.amazonaws.com/seaclouds-usescases-artifacts/php/paas/splitted/nuro-gui.zip
       type: org.apache.brooklyn.entity.cloudfoundry.webapp.php.PhpCloudFoundryPaasWebApp
+    nuro-pma:
+      requirements:
+      - dbConnection:
+          node: db
+          relationship: brooklyn.relationships.Configure
+          properties:
+            prop.collection: env
+            prop.name: db_connection_uri
+            prop.value: $brooklyn:formatString("mysql://%s:%s@%s:%s/%s", "brooklyn", "br00k11n", component("db").attributeWhenReady("host.address"), component("db").attributeWhenReady("mysql.port"), "database1")
+      properties:
+        language: PHP
+        autoscale: false
+        application-url: https://s3-us-west-2.amazonaws.com/seaclouds-usescases-artifacts/php/paas/splitted/php-my-admin.zip
+      type: org.apache.brooklyn.entity.cloudfoundry.webapp.php.PhpCloudFoundryPaasWebApp
   groups:
     operation_db:
       members:
@@ -191,7 +208,7 @@ topology_template:
     monitoringInformation:
       policies:
       - monitoringrules.information.policy:
-          id: 3e423608-8aea-4cdd-8ec6-2ac3fa10bffc
+          id: 5dd3c1b8-4ba9-4f1f-a91a-18d2cf02c057
           type: seaclouds.policies.monitoringrules
       members:
       - application
@@ -252,5 +269,16 @@ topology_template:
             endpoint: <API_endpoint>
             space: <space>
             address: <platform_address>
-template_name: seaclouds.app.sMEhbQS6
-template_version: 1.0.0-SNAPSHOT
+    add_brooklyn_location_nuro-pma:
+      members:
+      - nuro-pma
+      policies:
+      - brooklyn.location:
+          cloudfoundry:
+            user: <AKA_YOUR_USER_EMAIL>
+            password: <password>
+            org: <organization>
+            endpoint: <API_endpoint>
+            space: <space>
+            address: <platform_address>
+

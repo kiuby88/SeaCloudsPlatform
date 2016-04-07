@@ -53,6 +53,25 @@ topology_template:
             prop.name: nuro_api_uri
       - host: Cloud_Foundry
         instancesPOC: 4
+
+    nuro-pma:
+      type: sc_req.nuro-pma
+      properties:
+        language: PHP
+        autoscale: false
+      artifacts:
+      - tarball.url: https://s3-us-west-2.amazonaws.com/seaclouds-usescases-artifacts/php/paas/splitted/php-my-admin.zip
+        type: tosca.artifacts.File
+      requirements:
+      - endpoint:
+          node: db
+          type: seaclouds.relations.databaseconnections.php
+          properties:
+            prop.name: db_connection_uri
+      - host: Cloud_Foundry
+        instancesPOC: 2
+
+
     Amazon_EC2_t2_small_eu_west_1:
       type: seaclouds.nodes.Compute.Amazon_EC2
       properties:
@@ -124,6 +143,21 @@ node_types:
       resource_type:
         constraints:
         - equal: platform
+
+  sc_req.nuro-pma:
+    derived_from: seaclouds.nodes.php.httpd.PhpHttpdServer
+    properties:
+      php_support:
+        constraints:
+        - equal: true
+      php_version:
+        constraints:
+        - greater_or_equal: '5.1'
+        - less_or_equal: '5.5'
+      resource_type:
+        constraints:
+        - equal: platform
+
   seaclouds.nodes.Compute:
     derived_from: tosca.nodes.Compute
     description: Custom compute
