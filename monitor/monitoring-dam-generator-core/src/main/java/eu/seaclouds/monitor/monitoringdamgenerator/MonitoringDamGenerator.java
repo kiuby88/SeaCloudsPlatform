@@ -17,6 +17,8 @@ import org.yaml.snakeyaml.Yaml;
 
 
 import java.io.IOException;
+import java.io.StringWriter;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -25,6 +27,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
 
 public class MonitoringDamGenerator {
     private static final Logger logger = LoggerFactory
@@ -51,6 +57,31 @@ public class MonitoringDamGenerator {
 
     private URL monitoringManagerUrl;
     private URL influxdbUrl;
+    
+    public static void main(String args[]){
+        MonitoringDamGenerator gen;
+        try {
+            gen = new MonitoringDamGenerator(new URL("http://128.0.0.1:8080/"), new URL("http://128.0.0.1:8083/"));
+            MonitoringInfo info = gen.generateMonitoringInfo(readFile("resources/adp_example.yml", Charset.defaultCharset()));
+            System.out.println(info.getReturnedAdp());
+
+            StringWriter writer = new StringWriter();
+            JAXBContext context = JAXBContext.newInstance(MonitoringRules.class);            
+            Marshaller m = context.createMarshaller();
+            m.marshal(info.getApplicationMonitoringRules(), writer);
+            //System.out.println(writer.toString());
+            
+        } catch (MalformedURLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (JAXBException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
 
     public MonitoringDamGenerator(URL monitoringManagerUrl, URL influxdbUrl) {
 
