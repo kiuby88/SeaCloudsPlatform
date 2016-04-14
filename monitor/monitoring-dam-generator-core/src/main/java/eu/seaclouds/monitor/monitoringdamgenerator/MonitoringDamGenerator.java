@@ -6,7 +6,6 @@ import eu.seaclouds.monitor.monitoringdamgenerator.adpparsing.Module;
 import eu.seaclouds.monitor.monitoringdamgenerator.adpparsing.YAMLMonitorParser;
 import eu.seaclouds.monitor.monitoringdamgenerator.dcgenerators.JavaAppDcGenerator;
 import eu.seaclouds.monitor.monitoringdamgenerator.dcgenerators.MODACloudsDcGenerator;
-import eu.seaclouds.monitor.monitoringdamgenerator.dcgenerators.SeaCloudsDcGenerator;
 import eu.seaclouds.monitor.monitoringdamgenerator.rulesgenerators.ApplicationRulesGenerator;
 import eu.seaclouds.monitor.monitoringdamgenerator.rulesgenerators.InfrastructuralRulesGenerator;
 import eu.seaclouds.monitor.monitoringdamgenerator.rulesgenerators.NuroRulesGenerator;
@@ -103,7 +102,6 @@ public class MonitoringDamGenerator {
             NuroRulesGenerator nrg = new NuroRulesGenerator();
             MODACloudsDcGenerator modacloudsDcScriptGen = new MODACloudsDcGenerator();
             JavaAppDcGenerator javaDcScriptGen = new JavaAppDcGenerator();
-            SeaCloudsDcGenerator seacloudsDcGen = new SeaCloudsDcGenerator();
                 
             List<Module> modules = adpParser.getModuleRelevantInfoFromAdp(adp);
             List<Host> hosts = getDistinctHostsFromModules(modules);
@@ -144,13 +142,6 @@ public class MonitoringDamGenerator {
                                 this.influxdbUrl.getHost(),
                                 this.influxdbUrl.getPort());
                     }
-                    
-                    
-                    seacloudsDcGen.addDataCollector(module,
-                            this.monitoringManagerUrl.getHost(),
-                            this.monitoringManagerUrl.getPort(),
-                            this.influxdbUrl.getHost(),
-                            this.influxdbUrl.getPort());
                     
                 }
                 
