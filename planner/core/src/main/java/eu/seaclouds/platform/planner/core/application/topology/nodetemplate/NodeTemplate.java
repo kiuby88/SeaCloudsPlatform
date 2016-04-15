@@ -43,4 +43,6 @@ public interface NodeTemplate {
 
     public Object getPropertyValue(String propertyName);
 
+    public void updateProperties(Map<String, Object> properties);
+
 }

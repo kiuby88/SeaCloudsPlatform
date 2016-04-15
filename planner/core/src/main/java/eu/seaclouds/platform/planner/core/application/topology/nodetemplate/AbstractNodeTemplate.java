@@ -302,6 +302,13 @@ public class AbstractNodeTemplate implements NodeTemplate {
     }
 
     @Override
+    public void updateProperties(Map<String, Object> properties) {
+        if(properties != null){
+            this.properties = properties;
+        }
+    }
+
+    @Override
     public String getNodeTemplateId() {
         return nodeTemplateId;
     }

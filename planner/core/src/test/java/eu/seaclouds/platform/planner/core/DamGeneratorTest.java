@@ -239,7 +239,6 @@ public class DamGeneratorTest {
         assertEquals(generatedNodeTemplates.get("nuro-gui"), expectedNodeTemplates.get("nuro-gui"));
         assertEquals(generatedNodeTemplates.get("modacloudsDc_nuro-gui"), expectedNodeTemplates.get("modacloudsDc_nuro-gui"));
 
-
         assertEquals(generatedNodeTemplates.get("nuro-api"), expectedNodeTemplates.get("nuro-api"));
         assertEquals(generatedNodeTemplates.get("modacloudsDc_nuro-api"), expectedNodeTemplates.get("modacloudsDc_nuro-api"));
 
