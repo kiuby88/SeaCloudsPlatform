@@ -55,7 +55,7 @@ topology_template:
           - greater_or_equal: '5'
           - less_or_equal: '7'
         wars.root: https://s3-eu-west-1.amazonaws.com/atos-paas/v3/softcare-forum.war
-        env:
+        java.sysprops:
           MODULE_ID: Forum
           MODACLOUDS_TOWER4CLOUDS_INFLUXDB_IP: 52.48.187.2
           MODACLOUDS_TOWER4CLOUDS_MANAGER_PORT: '8170'
@@ -81,7 +81,7 @@ topology_template:
           - greater_or_equal: '5'
           - less_or_equal: '7'
         wars.root: https://s3-eu-west-1.amazonaws.com/atos-paas/v3/softcare-ws.war
-        env:
+        java.sysprops:
           MODULE_ID: SoftcareWS
           MODACLOUDS_TOWER4CLOUDS_INFLUXDB_IP: 52.48.187.2
           MODACLOUDS_TOWER4CLOUDS_MANAGER_PORT: '8170'
@@ -99,7 +99,7 @@ topology_template:
           - greater_or_equal: '5'
           - less_or_equal: '7'
         wars.root: https://s3-eu-west-1.amazonaws.com/atos-paas/v3/softcare-gui.war
-        env:
+        java.sysprops:
           MODULE_ID: Softcare_dashboard
           MODACLOUDS_TOWER4CLOUDS_INFLUXDB_IP: 52.48.187.2
           MODACLOUDS_TOWER4CLOUDS_MANAGER_PORT: '8170'

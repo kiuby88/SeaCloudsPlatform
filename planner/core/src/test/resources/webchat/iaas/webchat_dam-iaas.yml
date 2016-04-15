@@ -8,7 +8,7 @@ topology_template:
       properties:
         language: JAVA
         wars.root: 'http://search.maven.org/remotecontent?filepath=io/brooklyn/example/brooklyn-example-hello-world-sql-webapp/0.6.0/brooklyn-example-hello-world-sql-webapp-0.6.0.war'
-        env:
+        java.sysprops:
           MODULE_ID: Chat
           MODACLOUDS_TOWER4CLOUDS_INFLUXDB_IP: 52.48.187.2
           MODACLOUDS_TOWER4CLOUDS_MANAGER_PORT: '8170'
