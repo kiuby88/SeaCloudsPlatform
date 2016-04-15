@@ -16,6 +16,13 @@ topology_template:
         language: JAVA
         autoscale: false
         application-url: https://s3-eu-west-1.amazonaws.com/atos-paas/v3/softcare-gui.war
+        env:
+          MODULE_ID: Softcare_dashboard
+          MODACLOUDS_TOWER4CLOUDS_INFLUXDB_IP: 52.48.187.2
+          MODACLOUDS_TOWER4CLOUDS_MANAGER_PORT: '8170'
+          MODACLOUDS_TOWER4CLOUDS_INFLUXDB_PORT: '8170'
+          METRICS: ResponseTime
+          MODACLOUDS_TOWER4CLOUDS_MANAGER_IP: 52.48.187.2
       requirements:
       - endpoint_configuration:
           node: SoftcareWS
@@ -45,6 +52,13 @@ topology_template:
         language: JAVA
         autoscale: false
         application-url: https://s3-eu-west-1.amazonaws.com/atos-paas/v3/softcare-forum.war
+        env:
+          MODULE_ID: Forum
+          MODACLOUDS_TOWER4CLOUDS_INFLUXDB_IP: 52.48.187.2
+          MODACLOUDS_TOWER4CLOUDS_MANAGER_PORT: '8170'
+          MODACLOUDS_TOWER4CLOUDS_INFLUXDB_PORT: '8170'
+          METRICS: ResponseTime
+          MODACLOUDS_TOWER4CLOUDS_MANAGER_IP: 52.48.187.2
       type: org.apache.brooklyn.entity.cloudfoundry.webapp.java.JavaCloudFoundryPaasWebApp
 
     SoftcareWS:
@@ -60,6 +74,13 @@ topology_template:
         language: JAVA
         autoscale: false
         application-url: https://s3-eu-west-1.amazonaws.com/atos-paas/v3/softcare-ws.war
+        env:
+          MODULE_ID: SoftcareWS
+          MODACLOUDS_TOWER4CLOUDS_INFLUXDB_IP: 52.48.187.2
+          MODACLOUDS_TOWER4CLOUDS_MANAGER_PORT: '8170'
+          MODACLOUDS_TOWER4CLOUDS_INFLUXDB_PORT: '8170'
+          METRICS: ResponseTime
+          MODACLOUDS_TOWER4CLOUDS_MANAGER_IP: 52.48.187.2
       type: org.apache.brooklyn.entity.cloudfoundry.webapp.java.JavaCloudFoundryPaasWebApp
 
     ForumDB:

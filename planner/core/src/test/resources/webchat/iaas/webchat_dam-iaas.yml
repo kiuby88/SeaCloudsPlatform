@@ -5,7 +5,16 @@ topology_template:
   node_templates:
     Chat:
       type: org.apache.brooklyn.entity.webapp.tomcat.TomcatServer
-      properties: {language: JAVA, wars.root: 'http://search.maven.org/remotecontent?filepath=io/brooklyn/example/brooklyn-example-hello-world-sql-webapp/0.6.0/brooklyn-example-hello-world-sql-webapp-0.6.0.war'}
+      properties:
+        language: JAVA
+        wars.root: 'http://search.maven.org/remotecontent?filepath=io/brooklyn/example/brooklyn-example-hello-world-sql-webapp/0.6.0/brooklyn-example-hello-world-sql-webapp-0.6.0.war'
+        env:
+          MODULE_ID: Chat
+          MODACLOUDS_TOWER4CLOUDS_INFLUXDB_IP: 52.48.187.2
+          MODACLOUDS_TOWER4CLOUDS_MANAGER_PORT: '8170'
+          MODACLOUDS_TOWER4CLOUDS_INFLUXDB_PORT: '8170'
+          METRICS: ResponseTime
+          MODACLOUDS_TOWER4CLOUDS_MANAGER_IP: 52.48.187.2
       requirements:
       - host: Amazon_EC2_c1_medium_us_west_2
       - dbConnection:

@@ -217,14 +217,14 @@ public class MonitoringDamGenerator {
             variablesToSet = module.getMonitoringEnvVars();
             currentNodeTemplate = (Map<String, Object>) nodeTemplates.get(module.getModuleName());
             properties = (Map<String, Object>) currentNodeTemplate.get("properties");
-            
+
             if(currentNodeTemplate.get("properties") != null){
                 currentVars = (Map<String, Object>) properties.get("env");
                 if(currentVars != null){
                     for(String variable : variablesToSet.keySet()){
                         currentVars.put(variable, variablesToSet.get(variable));
                     }     
-                } else {
+                } else if((variablesToSet!= null ) && (!variablesToSet.isEmpty())) {
                     properties.put("env", module.getMonitoringEnvVars());
                 }
             } else if (!variablesToSet.isEmpty()){

@@ -25,6 +25,13 @@ topology_template:
         language: JAVA
         autoscale: false
         application-url: https://s3-us-west-2.amazonaws.com/seaclouds-usescases-artifacts/webchat/webchat-jm.war
+        env:
+          MODULE_ID: tomcat_server
+          MODACLOUDS_TOWER4CLOUDS_INFLUXDB_IP: 52.48.187.2
+          MODACLOUDS_TOWER4CLOUDS_MANAGER_PORT: '8170'
+          MODACLOUDS_TOWER4CLOUDS_INFLUXDB_PORT: '8170'
+          METRICS: ResponseTime
+          MODACLOUDS_TOWER4CLOUDS_MANAGER_IP: 52.48.187.2
       requirements:
       - dbConnection:
           node: db
