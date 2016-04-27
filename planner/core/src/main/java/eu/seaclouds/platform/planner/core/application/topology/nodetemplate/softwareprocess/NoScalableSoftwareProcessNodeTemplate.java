@@ -14,23 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package eu.seaclouds.platform.planner.core.application;
+package eu.seaclouds.platform.planner.core.application.topology.nodetemplate.softwareprocess;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Map;
 
-public class ApplicationMonitorId {
-    public String id;
+import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.AbstractHostedNodeTemplate;
 
-    public ApplicationMonitorId() {
-    }
+public class NoScalableSoftwareProcessNodeTemplate extends AbstractHostedNodeTemplate implements NoScalableSoftwareProcess{
 
-    @JsonProperty
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    @JsonProperty
-    public String getId() {
-        return this.id;
+    public NoScalableSoftwareProcessNodeTemplate(Map<String, Object> applicationTemplate, String nodeTemplateId) {
+        super(applicationTemplate, nodeTemplateId);
     }
 }

@@ -16,12 +16,12 @@
  */
 package eu.seaclouds.platform.planner.core.application;
 
+import java.util.List;
+import java.util.Map;
+
 import org.apache.brooklyn.util.collections.MutableList;
 import org.apache.brooklyn.util.text.Identifiers;
 import org.apache.brooklyn.util.text.Strings;
-
-import java.util.List;
-import java.util.Map;
 
 public class ApplicationMetadataGenerator {
 
