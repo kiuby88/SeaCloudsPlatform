@@ -177,14 +177,6 @@ groups:
     - QoSRequirements:
         AppAvailable:
           greater_than: 90.0
-    - autoscaling:
-        autoscaler.resizeDownStabilizationDelay: 120000
-        maxPoolSize: 32
-        metric: seaclouds.metrics.requestPerNode
-        minPoolSize: 1
-        metricUpperBound: .inf
-        type: seaclouds.policies.autoscaling.AutoScalerPolicy
-        metricLowerBound: .inf
   operation_nuro-api:
     members:
     - nuro-api
@@ -197,14 +189,6 @@ groups:
     - QoSRequirements:
         AppAvailable:
           greater_than: 90.0
-    - autoscaling:
-        autoscaler.resizeDownStabilizationDelay: 120000
-        maxPoolSize: 2
-        metric: seaclouds.metrics.requestPerNode
-        minPoolSize: 1
-        metricUpperBound: 200.0
-        type: seaclouds.policies.autoscaling.AutoScalerPolicy
-        metricLowerBound: 100.0
   operation_nuro-gui:
     members:
     - nuro-gui
@@ -232,11 +216,3 @@ groups:
         fitnessPOC: 44.9477290651349
         expectedCostPOC: 199.44000000000003
         expectedExecutionTimePOC: 0.2
-    - autoscaling:
-        autoscaler.resizeDownStabilizationDelay: 120000
-        maxPoolSize: 4
-        metric: seaclouds.metrics.requestPerNode
-        minPoolSize: 1
-        metricUpperBound: 100.0
-        type: seaclouds.policies.autoscaling.AutoScalerPolicy
-        metricLowerBound: 50.0

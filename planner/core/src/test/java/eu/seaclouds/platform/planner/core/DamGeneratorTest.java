@@ -561,6 +561,99 @@ public class DamGeneratorTest {
         assertEquals(generatedGroups.get("add_brooklyn_location_tomcat_server"), expectedGroups.get("add_brooklyn_location_tomcat_server"));
     }
 
+
+    @Test(enabled = false)
+    @SuppressWarnings("unchecked")
+    public void testAutoscalingWebChatGenerationForIaaS() throws Exception {
+        String adp = new Scanner(new File(Resources.getResource("webchat/iaas/autoscaling-webchat_adp-iaas.yml").toURI())).useDelimiter("\\Z").next();
+
+        dam = damGenerator.generateDam(adp);
+        template = YamlParser.load(dam);
+
+        testMetadataTemplate(template);
+
+        String expectedDamString = new Scanner(new File(Resources.getResource("webchat/iaas/autoscaling-webchat_dam-iaas.yml").toURI())).useDelimiter("\\Z").next();
+        Map<String, Object> expectedDam = YamlParser.load(expectedDamString);
+
+        assertNotNull(template);
+
+        Map<String, Object> generatedTopologyTemplate = (Map<String, Object>) template.get(DamGenerator.TOPOLOGY_TEMPLATE);
+        Map<String, Object> expectedTopologyTemplate = (Map<String, Object>) expectedDam.get(DamGenerator.TOPOLOGY_TEMPLATE);
+
+        Map<String, Object> generatedNodeTemplates = (Map<String, Object>) generatedTopologyTemplate.get(DamGenerator.NODE_TEMPLATES);
+        Map<String, Object> expectedNodeTemplates = (Map<String, Object>) expectedTopologyTemplate.get(DamGenerator.NODE_TEMPLATES);
+
+        assertEquals(generatedNodeTemplates.size(), 6);
+        assertEquals(generatedNodeTemplates.get("webapp"), expectedNodeTemplates.get("webapp"));
+        assertEquals(generatedNodeTemplates.get("database"), expectedNodeTemplates.get("database"));
+
+        assertEquals(generatedNodeTemplates.get("modacloudsDc_webapp"), expectedNodeTemplates.get("modacloudsDc_webapp"));
+        assertEquals(generatedNodeTemplates.get("modacloudsDc_database"), expectedNodeTemplates.get("modacloudsDc_database"));
+
+        assertEquals(generatedNodeTemplates.get("Amazon_EC2_t1_micro_us_west_2_webapp"), expectedNodeTemplates.get("Amazon_EC2_t1_micro_us_west_2_webapp"));
+        assertEquals(generatedNodeTemplates.get("Amazon_EC2_c3_2xlarge_eu_west_1_database"), expectedNodeTemplates.get("Amazon_EC2_c3_2xlarge_eu_west_1_database"));
+
+        Map<String, Object> generatedGroups = (Map<String, Object>) generatedTopologyTemplate.get(DamGenerator.GROUPS);
+        Map<String, Object> expectedGroups = (Map<String, Object>) expectedTopologyTemplate.get(DamGenerator.GROUPS);
+        testSeaCloudsPolicy(generatedGroups);
+        testMonitoringConfiguration(generatedGroups);
+
+        assertEquals(generatedGroups.size(), 7);
+        assertEquals(generatedGroups.get("operation_webapp"), expectedGroups.get("operation_webapp"));
+        assertEquals(generatedGroups.get("operation_database"), expectedGroups.get("operation_database"));
+        assertEquals(generatedGroups.get("add_brooklyn_location_Amazon_EC2_t1_micro_us_west_2_webapp"), expectedGroups.get("add_brooklyn_location_Amazon_EC2_t1_micro_us_west_2_webapp"));
+        assertEquals(generatedGroups.get("add_brooklyn_location_Amazon_EC2_c3_2xlarge_eu_west_1_database"), expectedGroups.get("add_brooklyn_location_Amazon_EC2_c3_2xlarge_eu_west_1_database"));
+    }
+
+
+
+
+
+
+
+    @Test(enabled = true)
+    @SuppressWarnings("unchecked")
+    public void testAutoscalingWebChatGenerationForPaaS() throws Exception {
+        String adp = new Scanner(new File(Resources.getResource("webchat/paas/autoscaling-webchat_adp-paas.yml").toURI())).useDelimiter("\\Z").next();
+
+        dam = damGenerator.generateDam(adp);
+        template = YamlParser.load(dam);
+
+        testMetadataTemplate(template);
+
+        String expectedDamString = new Scanner(new File(Resources.getResource("webchat/paas/autoscaling-webchat_dam-paas.yml").toURI())).useDelimiter("\\Z").next();
+        Map<String, Object> expectedDam = YamlParser.load(expectedDamString);
+
+        assertNotNull(template);
+
+        Map<String, Object> generatedTopologyTemplate = (Map<String, Object>) template.get(DamGenerator.TOPOLOGY_TEMPLATE);
+        Map<String, Object> expectedTopologyTemplate = (Map<String, Object>) expectedDam.get(DamGenerator.TOPOLOGY_TEMPLATE);
+
+        Map<String, Object> generatedNodeTemplates = (Map<String, Object>) generatedTopologyTemplate.get(DamGenerator.NODE_TEMPLATES);
+        Map<String, Object> expectedNodeTemplates = (Map<String, Object>) expectedTopologyTemplate.get(DamGenerator.NODE_TEMPLATES);
+
+        assertEquals(generatedNodeTemplates.size(), 4);
+        assertEquals(generatedNodeTemplates.get("webapp"), expectedNodeTemplates.get("webapp"));
+        assertEquals(generatedNodeTemplates.get("database"), expectedNodeTemplates.get("database"));
+
+        assertEquals(generatedNodeTemplates.get("modacloudsDc_db"), expectedNodeTemplates.get("modacloudsDc_db"));
+
+        assertEquals(generatedNodeTemplates.get("Amazon_EC2_c3_xlarge_ap_southeast_2"), expectedNodeTemplates.get("Amazon_EC2_c3_xlarge_ap_southeast_2"));
+
+        Map<String, Object> generatedGroups = (Map<String, Object>) generatedTopologyTemplate.get(DamGenerator.GROUPS);
+        Map<String, Object> expectedGroups = (Map<String, Object>) expectedTopologyTemplate.get(DamGenerator.GROUPS);
+        testSeaCloudsPolicy(generatedGroups);
+        testMonitoringConfiguration(generatedGroups);
+
+        assertEquals(generatedGroups.size(), 8);
+        assertEquals(generatedGroups.get("operation_db"), expectedGroups.get("operation_db"));
+        assertEquals(generatedGroups.get("operation_tomcat_server"), expectedGroups.get("operation_tomcat_server"));
+        assertEquals(generatedGroups.get("add_brooklyn_location_Amazon_EC2_c3_xlarge_ap_southeast_2"), expectedGroups.get("add_brooklyn_location_Amazon_EC2_c3_xlarge_ap_southeast_2"));
+        assertEquals(generatedGroups.get("add_brooklyn_location_tomcat_server"), expectedGroups.get("add_brooklyn_location_tomcat_server"));
+    }
+
+
+
     public void testSeaCloudsPolicy(Map<String, Object> groups) {
         assertNotNull(groups);
         assertTrue(groups.containsKey(DamGenerator.SEACLOUDS_APPLICATION_CONFIGURATION));

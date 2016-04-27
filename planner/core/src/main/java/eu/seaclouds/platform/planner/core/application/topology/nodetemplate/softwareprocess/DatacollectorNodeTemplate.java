@@ -1,18 +1,18 @@
-package eu.seaclouds.platform.planner.core.application.topology.nodetemplate.datacollectors;
-
-import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.AbstractNodeTemplate;
-import org.apache.brooklyn.util.collections.MutableMap;
+package eu.seaclouds.platform.planner.core.application.topology.nodetemplate.softwareprocess;
 
 import java.util.Map;
 
-public class Datacollector extends AbstractNodeTemplate {
+import org.apache.brooklyn.util.collections.MutableMap;
+
+
+public class DatacollectorNodeTemplate extends NoScalableSoftwareProcessNodeTemplate {
 
     private static final String SUPPORTED_TYPES = "seaclouds.nodes.Datacollector";
     private static final String INTERFACES = "interfaces";
 
     private Map<String, Object> interfaces;
 
-    public Datacollector(Map<String, Object> applicationTemplate, String nodeTemplateId) {
+    public DatacollectorNodeTemplate(Map<String, Object> applicationTemplate, String nodeTemplateId) {
         super(applicationTemplate, nodeTemplateId);
     }
 

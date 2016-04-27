@@ -1,0 +1,160 @@
+tosca_definitions_version: tosca_simple_yaml_1_0_0_wd03
+description: caling-chat-web
+imports:
+- tosca-normative-types:1.0.0.wd06-SNAPSHOT
+topology_template:
+  node_templates:
+    webapp:
+      type: sc_req.webapp
+      properties:
+        language: JAVA
+        autoscale: true
+      artifacts:
+      - wars.root: https://s3-us-west-2.amazonaws.com/seaclouds-usescases-artifacts/webchat/webchat-jm.war
+        type: tosca.artifacts.File
+      requirements:
+      - endpoint:
+          node: database
+          type: seaclouds.relations.databaseconnections.jdbc
+          properties:
+            prop.name: brooklyn.example.db.url
+      - host: Cloud_Foundry_webapp
+        instancesPOC: 3
+    database:
+      type: sc_req.database
+      properties:
+        db_name: visitors
+        db_password: br00k11n
+        db_user: brooklyn
+        autoscale: false
+        mysql_version:
+          constraints:
+          - greater_or_equal: '5'
+          - less_or_equal: '5.6'
+      artifacts:
+      - creationScriptUrl: https://raw.githubusercontent.com/apache/incubator-brooklyn/master/brooklyn-server/launcher/src/test/resources/visitors-creation-script.sql
+        type: tosca.artifacts.File
+      requirements:
+      - host: Amazon_EC2_c3_2xlarge_eu_west_1_database
+        instancesPOC: 1
+    Cloud_Foundry_webapp:
+      type: seaclouds.nodes.Platform.Cloud_Foundry
+      properties:
+        node_support: true
+        go_support: true
+        tomcat_version: 7
+        private_hosting: true
+        resource_type: platform
+        tomcat_support: true
+        auto_scaling: false
+        public_hosting: false
+        java_support: true
+        horizontal_scaling: true
+        ruby_support: true
+        python_support: true
+        scala_support: true
+        vertical_scaling: true
+        location: cloudfoundry-instance
+        go_version: 1.4
+        php_support: true
+        performance: 192
+        availability: 0.99871
+        cost: 0.04
+    Amazon_EC2_c3_2xlarge_eu_west_1_database:
+      type: seaclouds.nodes.Compute.Amazon_EC2
+      properties:
+        num_cpus: 8
+        country: Ireland
+        cost: 0.47
+        city: DUBLIN
+        resource_type: compute
+        disk_size: 160
+        availability: 0.9995
+        performance: 173
+        hardwareId: c3.2xlarge
+        disk_type: ssd
+        location: aws-ec2
+        num_disks: 2
+        region: eu-west-1
+        ram: 15
+        continent: Europe
+node_types:
+  sc_req.webapp:
+    derived_from: seaclouds.nodes.webapp.tomcat.TomcatServer
+    properties:
+      java_support:
+        constraints:
+        - equal: true
+      tomcat_support:
+        constraints:
+        - equal: true
+      java_version:
+        constraints:
+        - greater_or_equal: '6'
+        - less_or_equal: '8'
+      resource_type:
+        constraints:
+        - equal: platform
+  sc_req.database:
+    derived_from: seaclouds.nodes.database.mysql.MySqlNode
+    properties:
+      num_cpus:
+        constraints:
+        - greater_or_equal: '8'
+      disk_size:
+        constraints:
+        - greater_or_equal: '50'
+      continent:
+        constraints:
+        - equal: Europe
+      resource_type:
+        constraints:
+        - equal: compute
+  seaclouds.nodes.Compute:
+    derived_from: tosca.nodes.Compute
+    description: Custom compute
+    properties:
+      hardwareId:
+        required: false
+        type: string
+groups:
+  operation_webapp:
+    members:
+    - webapp
+    policies:
+    - QoSInfo:
+        execution_time: 100 ms
+        benchmark_platform: Amazon_EC2_m1_medium_us_east_1
+    - dependencies:
+        operation_database: '3'
+    - AppQoSRequirements:
+        response_time:
+          less_than: 200.0 ms
+        availability:
+          greater_than: 0.99
+        cost:
+          less_or_equal: 1000.0 euros_per_month
+        workload:
+          less_or_equal: 60.0 req_per_min
+    - QoSRequirements:
+        AppAvailable:
+          greater_than: 98.0
+    - ExpectedQualityPOC:
+        expectedAvailabilityPOC: 0.9984999978565309
+        fitnessPOC: 29.020706104369296
+        expectedCostPOC: 424.79999999999995
+        expectedExecutionTimePOC: 0.6813124108416548
+    - autoscaling:
+        autoscaler.resizeDownStabilizationDelay: 120000
+        maxPoolSize: 23
+        metric: seaclouds.metrics.requestPerNode
+        minPoolSize: 1
+        metricUpperBound: 12.333333333333334
+        type: seaclouds.policies.autoscaling.AutoScalerPolicy
+        metricLowerBound: 6.166666666666667
+  operation_database:
+    members:
+    - database
+    policies:
+    - dependencies: {}
+    - QoSRequirements: {}

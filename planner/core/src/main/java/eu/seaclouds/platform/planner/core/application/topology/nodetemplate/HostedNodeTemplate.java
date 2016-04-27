@@ -14,23 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package eu.seaclouds.platform.planner.core.application;
+package eu.seaclouds.platform.planner.core.application.topology.nodetemplate;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.host.HostNodeTemplate;
 
-public class ApplicationMonitorId {
-    public String id;
+public interface HostedNodeTemplate extends NodeTemplate {
 
-    public ApplicationMonitorId() {
-    }
+    public void setHostNodeTemplate(HostNodeTemplate host);
 
-    @JsonProperty
-    public void setId(String id) {
-        this.id = id;
-    }
+    public HostNodeTemplate getHostNodeTemplate();
 
-    @JsonProperty
-    public String getId() {
-        return this.id;
-    }
+    public String getHostNodeName();
+
 }

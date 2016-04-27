@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class AbstractNodeTemplate implements NodeTemplate {
+public abstract class AbstractNodeTemplate implements NodeTemplate {
 
     static Logger log = LoggerFactory.getLogger(AbstractNodeTemplate.class);
 
@@ -149,6 +149,7 @@ public class AbstractNodeTemplate implements NodeTemplate {
         }
     }
 
+    //TODO mode host methods to HostedNodeTemplate interface and implementation
     private Map<String, Object> getHostRequirement() {
         for (Map<String, Object> req : requirements) {
             if (req.containsKey(HOST)) {
@@ -208,7 +209,7 @@ public class AbstractNodeTemplate implements NodeTemplate {
         return properties;
     }
 
-    private String getParentType() {
+    protected String getParentType() {
         String moduleType = getModuleType();
 
         if (nodeTypes.containsKey(moduleType)) {
@@ -254,7 +255,7 @@ public class AbstractNodeTemplate implements NodeTemplate {
         return false;
     }
 
-    public void getDeployerIaaSTypeResolver() {
+    private void getDeployerIaaSTypeResolver() {
         try {
             if (deployerTypesResolver == null) {
                 deployerTypesResolver = new DeployerTypesResolver(Resources
@@ -266,7 +267,7 @@ public class AbstractNodeTemplate implements NodeTemplate {
         }
     }
 
-    public void getDeployerPaaSTypeResolver() {
+    private void getDeployerPaaSTypeResolver() {
         try {
             if (deployerTypesResolver == null) {
                 deployerTypesResolver = new DeployerTypesResolver(Resources
