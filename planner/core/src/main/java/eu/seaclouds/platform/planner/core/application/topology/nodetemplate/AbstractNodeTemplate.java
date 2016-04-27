@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class AbstractNodeTemplate implements NodeTemplate {
+public abstract class AbstractNodeTemplate implements NodeTemplate {
 
     static Logger log = LoggerFactory.getLogger(AbstractNodeTemplate.class);
 
@@ -149,6 +149,7 @@ public class AbstractNodeTemplate implements NodeTemplate {
         }
     }
 
+    //TODO mode host methods to HostedNodeTemplate interface and implementation
     private Map<String, Object> getHostRequirement() {
         for (Map<String, Object> req : requirements) {
             if (req.containsKey(HOST)) {

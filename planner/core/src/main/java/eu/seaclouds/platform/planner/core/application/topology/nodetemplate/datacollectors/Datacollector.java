@@ -1,11 +1,11 @@
 package eu.seaclouds.platform.planner.core.application.topology.nodetemplate.datacollectors;
 
-import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.AbstractNodeTemplate;
+import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.AbstractHostedNodeTemplate;
 import org.apache.brooklyn.util.collections.MutableMap;
 
 import java.util.Map;
 
-public class Datacollector extends AbstractNodeTemplate {
+public class Datacollector extends AbstractHostedNodeTemplate {
 
     private static final String SUPPORTED_TYPES = "seaclouds.nodes.Datacollector";
     private static final String INTERFACES = "interfaces";

@@ -22,6 +22,7 @@ import eu.seaclouds.platform.planner.core.DamGenerator;
 import eu.seaclouds.platform.planner.core.DamGeneratorConfigBag;
 import eu.seaclouds.platform.planner.core.application.agreements.AgreementGenerator;
 import eu.seaclouds.platform.planner.core.application.topology.TopologyTemplateFacade;
+import eu.seaclouds.platform.planner.core.application.topology.TopologyTemplateFactory;
 import eu.seaclouds.platform.planner.core.application.topology.modifier.relation.TopologFacadeyModifierApplicator;
 import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.NodeTemplate;
 import eu.seaclouds.platform.planner.core.utils.YamlParser;
@@ -47,7 +48,7 @@ public class ApplicationFacade {
     public ApplicationFacade(Map<String, Object> adp, DamGeneratorConfigBag configBag) {
         this.adp = adp;
         this.template = MutableMap.copyOf(adp);
-        this.topologyTemplate = new TopologyTemplateFacade(adp);
+        this.topologyTemplate = new TopologyTemplateFactory(adp).createTopologyTemplate();
         this.configBag = configBag;
         init();
     }
@@ -120,7 +121,7 @@ public class ApplicationFacade {
     }
 
     private void createTopologyTemplate() {
-        this.topologyTemplate = new TopologyTemplateFacade(adp);
+        this.topologyTemplate = new TopologyTemplateFactory(adp).createTopologyTemplate();
         updateTypesAndTemplates();
     }
 

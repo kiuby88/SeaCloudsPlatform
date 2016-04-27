@@ -16,12 +16,13 @@
  */
 package eu.seaclouds.platform.planner.core.application.topology.nodetemplate;
 
+import java.util.Map;
+
 import eu.seaclouds.platform.planner.core.DamGenerator;
 import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.datacollectors.Datacollector;
 import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.host.ComputeNodeTemplate;
 import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.host.PlatformNodeTemplate;
-
-import java.util.Map;
+import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.softwareprocess.SoftwareProcessNodeTemplate;
 
 public class NodeTemplateFactory {
 
@@ -41,9 +42,49 @@ public class NodeTemplateFactory {
         } else if (Datacollector.isSupported(moduleType)) {
             return new Datacollector(applicationTemplate, nodeTemplateId);
         } else {
-            return new AbstractNodeTemplate(applicationTemplate, nodeTemplateId);
+            return new SoftwareProcessNodeTemplate(applicationTemplate, nodeTemplateId);
         }
 
+    }
+
+    public static ComputeNodeTemplate createComputeNodeTemplate(Map<String, Object> applicationTemplate,
+                                                                String nodeTemplateId) {
+        return new ComputeNodeTemplate(applicationTemplate, nodeTemplateId);
+    }
+
+    public static PlatformNodeTemplate createPlatformNodeTemplate(Map<String, Object> applicationTemplate,
+                                                                  String nodeTemplateId) {
+        return new PlatformNodeTemplate(applicationTemplate, nodeTemplateId);
+    }
+
+    public static Datacollector createDatacollectorNodeTemplate(Map<String, Object> applicationTemplate,
+                                                                String nodeTemplateId) {
+        return new Datacollector(applicationTemplate, nodeTemplateId);
+    }
+
+    public static SoftwareProcessNodeTemplate createSoftwareProcessNodeTemplate(Map<String, Object> applicationTemplate,
+                                                                                String nodeTemplateId) {
+        return new SoftwareProcessNodeTemplate(applicationTemplate, nodeTemplateId);
+    }
+
+    public static boolean isComputeHost(Map<String, Object> module) {
+        return ComputeNodeTemplate.isSupported(getModuleType(module));
+    }
+
+    public static boolean isPlatformHost(Map<String, Object> module) {
+        return PlatformNodeTemplate.isSupported(getModuleType(module));
+    }
+
+    public static boolean isDatacollector(Map<String, Object> module) {
+        return Datacollector.isSupported(getModuleType(module));
+    }
+
+    public static boolean isSoftwareProcess(Map<String, Object> module) {
+        return !(isComputeHost(module) || isPlatformHost(module) || isDatacollector(module));
+    }
+
+    private static String getModuleType(Map<String, Object> module) {
+        return (String) module.get(NodeTemplate.TYPE);
     }
 
 }
