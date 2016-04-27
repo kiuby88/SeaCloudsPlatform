@@ -222,14 +222,7 @@ groups:
     - QoSRequirements:
         AppAvailable:
           greater_than: 99.0
-    - autoscaling:
-        autoscaler.resizeDownStabilizationDelay: 120000
-        maxPoolSize: 9
-        metric: seaclouds.metrics.requestPerNode
-        minPoolSize: 1
-        metricUpperBound: 44.44444444444444
-        type: seaclouds.policies.autoscaling.AutoScalerPolicy
-        metricLowerBound: 22.22222222222222
+
   operation_SoftcareDB:
     members:
     - SoftcareDB
@@ -241,14 +234,7 @@ groups:
     - QoSRequirements:
         AppAvailable:
           greater_than: 99.0
-    - autoscaling:
-        autoscaler.resizeDownStabilizationDelay: 120000
-        maxPoolSize: 33
-        metric: seaclouds.metrics.requestPerNode
-        minPoolSize: 1
-        metricUpperBound: .inf
-        type: seaclouds.policies.autoscaling.AutoScalerPolicy
-        metricLowerBound: .inf
+
   operation_Forum:
     members:
     - Forum
@@ -261,14 +247,7 @@ groups:
     - QoSRequirements:
         AppAvailable:
           greater_than: 99.0
-    - autoscaling:
-        autoscaler.resizeDownStabilizationDelay: 120000
-        maxPoolSize: 4
-        metric: seaclouds.metrics.requestPerNode
-        minPoolSize: 1
-        metricUpperBound: 100.0
-        type: seaclouds.policies.autoscaling.AutoScalerPolicy
-        metricLowerBound: 50.0
+
   operation_SoftcareWS:
     members:
     - SoftcareWS
@@ -281,14 +260,7 @@ groups:
     - QoSRequirements:
         AppAvailable:
           greater_than: 99.0
-    - autoscaling:
-        autoscaler.resizeDownStabilizationDelay: 120000
-        maxPoolSize: 5
-        metric: seaclouds.metrics.requestPerNode
-        minPoolSize: 1
-        metricUpperBound: 80.0
-        type: seaclouds.policies.autoscaling.AutoScalerPolicy
-        metricLowerBound: 40.0
+
   operation_Softcare_dashboard:
     members:
     - Softcare_dashboard
@@ -316,11 +288,4 @@ groups:
         fitnessPOC: 41.589117721840836
         expectedCostPOC: 629.2800000000001
         expectedExecutionTimePOC: 0.6000000000000001
-    - autoscaling:
-        autoscaler.resizeDownStabilizationDelay: 120000
-        maxPoolSize: 7
-        metric: seaclouds.metrics.requestPerNode
-        minPoolSize: 1
-        metricUpperBound: 57.142857142857146
-        type: seaclouds.policies.autoscaling.AutoScalerPolicy
-        metricLowerBound: 28.571428571428573
+

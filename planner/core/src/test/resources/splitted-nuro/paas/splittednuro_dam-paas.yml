@@ -115,14 +115,6 @@ topology_template:
           AppAvailable:
             greater_than: 90.0
           type: seaclouds.policies.QoSRequirements
-      - autoscaling:
-          autoscaler.resizeDownStabilizationDelay: 120000
-          maxPoolSize: 32
-          metric: seaclouds.metrics.requestPerNode
-          minPoolSize: 1
-          metricUpperBound: .inf
-          type: seaclouds.policies.autoscaling.AutoScalerPolicy
-          metricLowerBound: .inf
     operation_nuro-api:
       members:
       - nuro-api
@@ -138,14 +130,6 @@ topology_template:
           AppAvailable:
             greater_than: 90.0
           type: seaclouds.policies.QoSRequirements
-      - autoscaling:
-          autoscaler.resizeDownStabilizationDelay: 120000
-          maxPoolSize: 2
-          metric: seaclouds.metrics.requestPerNode
-          minPoolSize: 1
-          metricUpperBound: 200.0
-          type: seaclouds.policies.autoscaling.AutoScalerPolicy
-          metricLowerBound: 100.0
     operation_nuro-gui:
       members:
       - nuro-gui
@@ -178,14 +162,6 @@ topology_template:
           expectedCostPOC: 199.44000000000003
           expectedExecutionTimePOC: 0.2
           type: seaclouds.policies.ExpectedQualityPOC
-      - autoscaling:
-          autoscaler.resizeDownStabilizationDelay: 120000
-          maxPoolSize: 4
-          metric: seaclouds.metrics.requestPerNode
-          minPoolSize: 1
-          metricUpperBound: 100.0
-          type: seaclouds.policies.autoscaling.AutoScalerPolicy
-          metricLowerBound: 50.0
     monitoringInformation:
       policies:
       - monitoringrules.information.policy:

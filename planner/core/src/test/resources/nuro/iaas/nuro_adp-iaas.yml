@@ -8,7 +8,7 @@ topology_template:
       type: sc_req.www
       properties:
         language: PHP
-        autoscale: true
+        autoscale: false
         git.url: https://seaclDem:seaclouds@bitbucket.org/seaclDem/nuro-casestudy.git
         php_version:
           constraints:

@@ -7,7 +7,7 @@ topology_template:
       type: org.apache.brooklyn.entity.php.httpd.PhpHttpdServer
       properties:
         language: PHP
-        autoscale: true
+        autoscale: false
         php_version:
           constraints:
           - {greater_or_equal: '5.1'}

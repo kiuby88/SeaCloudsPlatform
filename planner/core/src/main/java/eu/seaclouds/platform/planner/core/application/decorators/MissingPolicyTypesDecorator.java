@@ -25,7 +25,7 @@ import java.util.Map;
 /**
  * This decorator ensures that each policy has a type
  */
-//TODO: this decorator has to be refactoring. A GroupsFacade should be used
+//TODO: this decorator has to be refactoring. Groups should be added to TopologyTemplate object
 public class MissingPolicyTypesDecorator implements ApplicationFacadeDecorator {
 
     @Override

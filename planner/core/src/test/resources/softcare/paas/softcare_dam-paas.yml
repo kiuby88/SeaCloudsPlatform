@@ -196,14 +196,6 @@ topology_template:
           AppAvailable:
             greater_than: 99.0
           type: seaclouds.policies.QoSRequirements
-      - autoscaling:
-          autoscaler.resizeDownStabilizationDelay: 120000
-          maxPoolSize: 9
-          metric: seaclouds.metrics.requestPerNode
-          minPoolSize: 1
-          metricUpperBound: 44.44444444444444
-          type: seaclouds.policies.autoscaling.AutoScalerPolicy
-          metricLowerBound: 22.22222222222222
     operation_SoftcareDB:
       members:
       - SoftcareDB
@@ -218,14 +210,7 @@ topology_template:
           AppAvailable:
             greater_than: 99.0
           type: seaclouds.policies.QoSRequirements
-      - autoscaling:
-          autoscaler.resizeDownStabilizationDelay: 120000
-          maxPoolSize: 33
-          metric: seaclouds.metrics.requestPerNode
-          minPoolSize: 1
-          metricUpperBound: .inf
-          type: seaclouds.policies.autoscaling.AutoScalerPolicy
-          metricLowerBound: .inf
+
     operation_Forum:
       members:
       - Forum
@@ -241,14 +226,7 @@ topology_template:
           AppAvailable:
             greater_than: 99.0
           type: seaclouds.policies.QoSRequirements
-      - autoscaling:
-          autoscaler.resizeDownStabilizationDelay: 120000
-          maxPoolSize: 4
-          metric: seaclouds.metrics.requestPerNode
-          minPoolSize: 1
-          metricUpperBound: 100.0
-          type: seaclouds.policies.autoscaling.AutoScalerPolicy
-          metricLowerBound: 50.0
+
     operation_SoftcareWS:
       members:
       - SoftcareWS
@@ -264,14 +242,7 @@ topology_template:
           AppAvailable:
             greater_than: 99.0
           type: seaclouds.policies.QoSRequirements
-      - autoscaling:
-          autoscaler.resizeDownStabilizationDelay: 120000
-          maxPoolSize: 5
-          metric: seaclouds.metrics.requestPerNode
-          minPoolSize: 1
-          metricUpperBound: 80.0
-          type: seaclouds.policies.autoscaling.AutoScalerPolicy
-          metricLowerBound: 40.0
+
     operation_Softcare_dashboard:
       members:
       - Softcare_dashboard
@@ -304,14 +275,7 @@ topology_template:
           expectedCostPOC: 629.2800000000001
           expectedExecutionTimePOC: 0.6000000000000001
           type: seaclouds.policies.ExpectedQualityPOC
-      - autoscaling:
-          autoscaler.resizeDownStabilizationDelay: 120000
-          maxPoolSize: 7
-          metric: seaclouds.metrics.requestPerNode
-          minPoolSize: 1
-          metricUpperBound: 57.142857142857146
-          type: seaclouds.policies.autoscaling.AutoScalerPolicy
-          metricLowerBound: 28.571428571428573
+
     monitoringInformation:
       policies:
       - monitoringrules.information.policy:

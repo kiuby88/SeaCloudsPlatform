@@ -250,14 +250,6 @@ groups:
     - QoSRequirements:
         AppAvailable:
           greater_than: 99.0
-    - autoscaling:
-        autoscaler.resizeDownStabilizationDelay: 120000
-        maxPoolSize: 6
-        metric: seaclouds.metrics.requestPerNode
-        minPoolSize: 1
-        metricUpperBound: 66.66666666666667
-        type: seaclouds.policies.autoscaling.AutoScalerPolicy
-        metricLowerBound: 33.333333333333336
   operation_SoftcareDB:
     members:
     - SoftcareDB
@@ -269,14 +261,7 @@ groups:
     - QoSRequirements:
         AppAvailable:
           greater_than: 99.0
-    - autoscaling:
-        autoscaler.resizeDownStabilizationDelay: 120000
-        maxPoolSize: 2
-        metric: seaclouds.metrics.requestPerNode
-        minPoolSize: 1
-        metricUpperBound: 200.0
-        type: seaclouds.policies.autoscaling.AutoScalerPolicy
-        metricLowerBound: 100.0
+
   operation_Forum:
     members:
     - Forum
@@ -289,14 +274,7 @@ groups:
     - QoSRequirements:
         AppAvailable:
           greater_than: 99.0
-    - autoscaling:
-        autoscaler.resizeDownStabilizationDelay: 120000
-        maxPoolSize: 8
-        metric: seaclouds.metrics.requestPerNode
-        minPoolSize: 1
-        metricUpperBound: 50.0
-        type: seaclouds.policies.autoscaling.AutoScalerPolicy
-        metricLowerBound: 25.0
+
   operation_SoftcareWS:
     members:
     - SoftcareWS
@@ -336,11 +314,3 @@ groups:
         fitnessPOC: 0.8495114387689426
         expectedCostPOC: 1823.04
         expectedExecutionTimePOC: 0.8
-    - autoscaling:
-        autoscaler.resizeDownStabilizationDelay: 120000
-        maxPoolSize: 2
-        metric: seaclouds.metrics.requestPerNode
-        minPoolSize: 1
-        metricUpperBound: 200.0
-        type: seaclouds.policies.autoscaling.AutoScalerPolicy
-        metricLowerBound: 100.0

@@ -17,34 +17,47 @@
 package eu.seaclouds.platform.planner.core.application.topology;
 
 
-import eu.seaclouds.platform.planner.core.DamGenerator;
-import eu.seaclouds.platform.planner.core.application.topology.modifier.relation.TopologyModifierApplication;
-import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.AbstractNodeTemplate;
-import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.NodeTemplate;
-import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.NodeTemplateFactory;
-import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.host.HostNodeTemplate;
-import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.host.PaasNodeTemplateFacade;
-import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.host.PlatformNodeTemplate;
-import org.apache.brooklyn.util.collections.MutableList;
-import org.apache.brooklyn.util.collections.MutableMap;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import org.apache.brooklyn.util.collections.MutableList;
+import org.apache.brooklyn.util.collections.MutableMap;
+
+import com.google.common.base.Optional;
+
+import eu.seaclouds.platform.planner.core.DamGenerator;
+import eu.seaclouds.platform.planner.core.application.topology.modifier.relation.TopologyModifierApplication;
+import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.AbstractNodeTemplate;
+import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.HostedNodeTemplate;
+import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.NodeTemplate;
+import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.NodeTemplateFactory;
+import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.host.HostNodeTemplate;
+import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.host.PaasNodeTemplateFacade;
+import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.host.PlatformNodeTemplate;
+import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.softwareprocess.DatacollectorNodeTemplate;
 
 public class TopologyTemplateFacade {
 
-    private final Map<String, Object> originalAdp;
+    private Map<String, Object> originalAdp;
+    private Map<String, Object> originalNodeTemplates;
     private Map<String, Object> topologyTemplate;
+
     private Map<String, NodeTemplate> nodeTemplates;
     private Map<String, HostNodeTemplate> hostNodeTemplates;
-    private Map<String, List<NodeTemplate>> topologyTree;
-    private Map<String, Object> originalNodeTemplates;
+    private Map<String, List<HostedNodeTemplate>> topologyTree;
 
-    public TopologyTemplateFacade(Map<String, Object> adp) {
+    public TopologyTemplateFacade(Map<String, Object> adp,
+                                  Map<String, NodeTemplate> nodeTemplates,
+                                  Map<String, List<HostedNodeTemplate>> topologyTree,
+                                  Map<String, HostNodeTemplate> hostNodeTemplates) {
+
         this.originalAdp = MutableMap.copyOf(adp);
+        this.nodeTemplates = nodeTemplates;
+        this.topologyTree = topologyTree;
+        this.hostNodeTemplates = hostNodeTemplates;
         init();
     }
 
@@ -52,11 +65,6 @@ public class TopologyTemplateFacade {
     private void init() {
         initOriginalTopologyTemplate();
         initOriginalNodesTemplates();
-
-        nodeTemplates = MutableMap.of();
-        hostNodeTemplates = MutableMap.of();
-        topologyTree = MutableMap.of();
-        initNodeTemplates();
     }
 
     private void initOriginalTopologyTemplate() {
@@ -71,27 +79,43 @@ public class TopologyTemplateFacade {
         originalNodeTemplates = (Map<String, Object>) topologyTemplate.get(DamGenerator.NODE_TEMPLATES);
     }
 
-    private void initNodeTemplates() {
-        for (String nodeTemplateId : originalNodeTemplates.keySet()) {
-            NodeTemplate nodeTemplate =
-                    NodeTemplateFactory.createNodeTemplate(originalAdp, nodeTemplateId);
-            addNodeTemplate(nodeTemplateId, nodeTemplate);
-        }
-    }
-
     private void addNodeTemplate(String nodeTemplateId, NodeTemplate nodeTemplate) {
         nodeTemplates.put(nodeTemplateId, nodeTemplate);
 
         if (nodeTemplate instanceof HostNodeTemplate) {
-            hostNodeTemplates
-                    .put(nodeTemplateId, (HostNodeTemplate) nodeTemplate);
+            addHostNodeTemplate(nodeTemplateId, (HostNodeTemplate) nodeTemplate);
         } else {
-            String hostNodeTemplateName = nodeTemplate.getHostNodeName();
-            if (!topologyTree.containsKey(hostNodeTemplateName)) {
-                topologyTree.put(hostNodeTemplateName, MutableList.<NodeTemplate>of());
-            }
-            topologyTree.get(hostNodeTemplateName).add(nodeTemplate);
+            addHostedNodeTemplate(nodeTemplateId, (HostedNodeTemplate) nodeTemplate);
         }
+    }
+
+    private void addHostNodeTemplate(String hostNodeTemplateId, HostNodeTemplate hostNodeTemplate) {
+        nodeTemplates.put(hostNodeTemplateId, hostNodeTemplate);
+        hostNodeTemplates.put(hostNodeTemplateId, hostNodeTemplate);
+    }
+
+    private void addHostedNodeTemplate(String hostedNodeTemplateId,
+                                       HostedNodeTemplate hostedNodeTemplate) {
+        String hostNodeTemplateId = hostedNodeTemplate.getHostNodeName();
+        Optional<HostNodeTemplate> foundHostNodeTemplate = findHostNodeTemplate(hostNodeTemplateId);
+
+        if (foundHostNodeTemplate.isPresent()) {
+            HostNodeTemplate hostNodeTemplate = foundHostNodeTemplate.get();
+            hostedNodeTemplate.setHostNodeTemplate(hostNodeTemplate);
+
+            if (!topologyTree.containsKey(hostNodeTemplateId)) {
+                topologyTree.put(hostNodeTemplateId, MutableList.<HostedNodeTemplate>of());
+            }
+            topologyTree.get(hostNodeTemplateId).add(hostedNodeTemplate);
+            nodeTemplates.put(hostedNodeTemplateId, hostedNodeTemplate);
+        } else {
+            throw new RuntimeException("Host not found " + hostNodeTemplateId + " addin the " +
+                    " NodeTemplate " + hostedNodeTemplateId + " in " + this);
+        }
+    }
+
+    private Optional<HostNodeTemplate> findHostNodeTemplate(String hostNodeTemplateId) {
+        return Optional.fromNullable(hostNodeTemplates.get(hostNodeTemplateId));
     }
 
     public Map<String, Object> getRequiredNodeTypes() {
@@ -126,34 +150,43 @@ public class TopologyTemplateFacade {
     }
 
     @SuppressWarnings("unchecked")
-    public void updateNodeTemplates(Map<String, Object> adp){
+    public void updateNodeTemplates(Map<String, Object> adp) {
+        originalAdp = adp;
         topologyTemplate = (Map<String, Object>) adp.get(DamGenerator.TOPOLOGY_TEMPLATE);
         originalNodeTemplates = (Map<String, Object>) topologyTemplate.get(DamGenerator.NODE_TEMPLATES);
-        updateNoExistNodeTemplate(adp);
+        updateNoExistDatacollectorNodeTemplate(adp);
         updateNodeTemplatesProperties(adp);
     }
 
-    private void updateNoExistNodeTemplate(Map<String, Object> adp) {
+    @SuppressWarnings("unchecked")
+    private void updateNoExistDatacollectorNodeTemplate(Map<String, Object> adp) {
         for (Map.Entry<String, Object> newNodeTemplate : originalNodeTemplates.entrySet()) {
             String nodeTemplateId = newNodeTemplate.getKey();
             if (!contained(nodeTemplateId)) {
-                NodeTemplate nodeTemplate =
-                        NodeTemplateFactory.createNodeTemplate(adp, nodeTemplateId);
-                addNodeTemplate(nodeTemplateId, nodeTemplate);
+                Map<String, Object> module = (Map<String, Object>) originalNodeTemplates.get(nodeTemplateId);
+                if (NodeTemplateFactory.isDatacollector(module)) {
+                    addNewDatacollector(nodeTemplateId);
+                }
             }
         }
     }
 
+    private void addNewDatacollector(String nodeTemplateId) {
+        DatacollectorNodeTemplate datacollector =
+                NodeTemplateFactory.createDatacollectorNodeTemplate(originalAdp, nodeTemplateId);
+        addHostedNodeTemplate(nodeTemplateId, datacollector);
+    }
+
     @SuppressWarnings("unchecked")
-    private void updateNodeTemplatesProperties(Map<String, Object> adp){
-        for (Map.Entry<String, Object>  entry : originalNodeTemplates.entrySet()) {
+    private void updateNodeTemplatesProperties(Map<String, Object> adp) {
+        for (Map.Entry<String, Object> entry : originalNodeTemplates.entrySet()) {
             String nodeTemplateId = entry.getKey();
             Map<String, Object> nodeTemplateFromAdp = (Map<String, Object>) entry.getValue();
             Map<String, Object> properties =
                     (Map<String, Object>) nodeTemplateFromAdp.get(DamGenerator.PROPERTIES);
 
             if (contained(nodeTemplateId)) {
-                 getNodeTemplates().get(nodeTemplateId).updateProperties(properties);
+                getNodeTemplates().get(nodeTemplateId).updateProperties(properties);
             }
         }
     }
@@ -165,7 +198,7 @@ public class TopologyTemplateFacade {
     }
 
     public void joinPlatformNodeTemplates() {
-        Map<HostNodeTemplate, List<NodeTemplate>> platformAndChildren =
+        Map<HostNodeTemplate, List<HostedNodeTemplate>> platformAndChildren =
                 extractPlatformTemplatesAndChildren();
         removeHostAndHostedChildren(platformAndChildren.keySet());
         addGeneratedPaasFacades(generatedPaasFacades(platformAndChildren));
@@ -177,8 +210,8 @@ public class TopologyTemplateFacade {
         }
     }
 
-    private Map<HostNodeTemplate, List<NodeTemplate>> extractPlatformTemplatesAndChildren() {
-        Map<HostNodeTemplate, List<NodeTemplate>> extracted = MutableMap.of();
+    private Map<HostNodeTemplate, List<HostedNodeTemplate>> extractPlatformTemplatesAndChildren() {
+        Map<HostNodeTemplate, List<HostedNodeTemplate>> extracted = MutableMap.of();
         for (Map.Entry<String, HostNodeTemplate> hostEntry : hostNodeTemplates.entrySet()) {
             HostNodeTemplate hostNodeTemplate = hostEntry.getValue();
             if (hostNodeTemplate instanceof PlatformNodeTemplate) {
@@ -190,7 +223,7 @@ public class TopologyTemplateFacade {
 
     private void removeHostAndHostedChildren(Set<HostNodeTemplate> hostNodeteTemplates) {
         for (HostNodeTemplate hostNodeTemplate : hostNodeteTemplates) {
-            List<NodeTemplate> hostedNodeTemplates = topologyTree.get(hostNodeTemplate.getNodeTemplateId());
+            List<HostedNodeTemplate> hostedNodeTemplates = topologyTree.get(hostNodeTemplate.getNodeTemplateId());
             nodeTemplates.remove(hostNodeTemplate.getNodeTemplateId());
             hostNodeTemplates.remove(hostNodeTemplate.getNodeTemplateId());
             topologyTree.remove(hostNodeTemplate.getNodeTemplateId());
@@ -198,20 +231,20 @@ public class TopologyTemplateFacade {
         }
     }
 
-    private void removeHostedNodeTemplates(List<NodeTemplate> hostedNodeTemplates) {
+    private void removeHostedNodeTemplates(List<HostedNodeTemplate> hostedNodeTemplates) {
         for (NodeTemplate hostedNodeTemplate : hostedNodeTemplates) {
             nodeTemplates.remove(hostedNodeTemplate.getNodeTemplateId());
         }
     }
 
-    private List<NodeTemplate> getHostedChildren(HostNodeTemplate host) {
+    private List<HostedNodeTemplate> getHostedChildren(HostNodeTemplate host) {
         return topologyTree.get(host.getNodeTemplateId());
     }
 
-    private List<PaasNodeTemplateFacade> generatedPaasFacades(Map<HostNodeTemplate, List<NodeTemplate>> hostAndChildren) {
+    private List<PaasNodeTemplateFacade> generatedPaasFacades(Map<HostNodeTemplate, List<HostedNodeTemplate>> hostAndChildren) {
         MutableList<PaasNodeTemplateFacade> paasNodeTemplateFacades = MutableList.of();
 
-        for (Map.Entry<HostNodeTemplate, List<NodeTemplate>> entry : hostAndChildren.entrySet()) {
+        for (Map.Entry<HostNodeTemplate, List<HostedNodeTemplate>> entry : hostAndChildren.entrySet()) {
             paasNodeTemplateFacades.addAll(
                     generatePaasFacadesFromAPlatform(
                             (PlatformNodeTemplate) entry.getKey(),
@@ -222,7 +255,7 @@ public class TopologyTemplateFacade {
 
     private List<PaasNodeTemplateFacade> generatePaasFacadesFromAPlatform(
             PlatformNodeTemplate platformNodeTemplate,
-            List<NodeTemplate> childNodeTemplates) {
+            List<HostedNodeTemplate> childNodeTemplates) {
 
         List<PaasNodeTemplateFacade> paasNodeTemplateFacades = MutableList.of();
         for (NodeTemplate hostedNode : childNodeTemplates) {
@@ -243,7 +276,7 @@ public class TopologyTemplateFacade {
         return nodeTemplates.get(nodeTemplateId).getPropertyValue(propertyName);
     }
 
-    public String getNodeTypeOf(String nodeTemplateId){
+    public String getNodeTypeOf(String nodeTemplateId) {
         checkNotNull(nodeTemplates.get(nodeTemplateId),
                 "Error finding nodeTemplate type, " + nodeTemplateId + "not found");
         return nodeTemplates.get(nodeTemplateId).getType();

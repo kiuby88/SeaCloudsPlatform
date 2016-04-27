@@ -11,9 +11,19 @@ mapping.node_types:
   seaclouds.nodes.php.httpd.PhpHttpdServer: org.apache.brooklyn.entity.cloudfoundry.webapp.php.PhpCloudFoundryPaasWebApp
   seaclouds.nodes.Platform.Cloud_Foundry: seaclouds.nodes.Platform.Cloud_Foundry
 
+mapping.scalable_node_types:
+  seaclouds.nodes.webapp.jboss.JBoss6Server: org.apache.brooklyn.entity.cloudfoundry.webapp.java.JavaCloudFoundryPaasWebApp
+  seaclouds.nodes.webapp.jboss.JBoss7Server: org.apache.brooklyn.entity.cloudfoundry.webapp.java.JavaCloudFoundryPaasWebApp
+  seaclouds.nodes.webapp.jetty.Jetty6Server: org.apache.brooklyn.entity.cloudfoundry.webapp.java.JavaCloudFoundryPaasWebApp
+  seaclouds.nodes.webapp.tomcat.TomcatServer: org.apache.brooklyn.entity.cloudfoundry.webapp.java.JavaCloudFoundryPaasWebApp
+  seaclouds.nodes.webapp.tomcat.Tomcat8Server: org.apache.brooklyn.entity.cloudfoundry.webapp.java.JavaCloudFoundryPaasWebApp
+  seaclouds.nodes.ControlledDynamicWebAppCluster: org.apache.brooklyn.entity.cloudfoundry.webapp.java.JavaCloudFoundryPaasWebApp
+
 mapping.policy_types:
   seaclouds.policies.autoscaling.AutoScalerPolicy: org.apache.brooklyn.policy.autoscaling.AutoScalerPolicy
 
+mapping.metrics:
+  seaclouds.metrics.requestPerNode: app.server.requestpersecond
 
 node_types:
 
