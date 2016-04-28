@@ -34,10 +34,10 @@ import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.Abst
 import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.HostedNodeTemplate;
 import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.NodeTemplate;
 import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.NodeTemplateFactory;
-import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.softwareprocess.DatacollectorNodeTemplate;
 import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.host.HostNodeTemplate;
 import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.host.PaasNodeTemplateFacade;
 import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.host.PlatformNodeTemplate;
+import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.softwareprocess.DatacollectorNodeTemplate;
 
 public class TopologyTemplateFacade {
 

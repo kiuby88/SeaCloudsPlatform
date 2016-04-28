@@ -16,6 +16,9 @@
  */
 package eu.seaclouds.platform.planner.core.application.topology.nodetemplate.softwareprocess;
 
-public interface ScalableSoftwareProcess {
+public interface ScalableSoftwareProcess extends SoftwareProcess{
+
+    public static final String AUTOSCALE_PROPERTY = "autoscale";
+
 
 }

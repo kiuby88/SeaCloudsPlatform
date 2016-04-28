@@ -16,6 +16,6 @@
  */
 package eu.seaclouds.platform.planner.core.application.topology.nodetemplate.softwareprocess;
 
-public interface NoScalableSoftwareProcess extends SoftwareProcess{
+public interface NoScalableSoftwareProcess extends SoftwareProcess {
 
 }

@@ -20,9 +20,15 @@ import java.util.Map;
 
 import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.AbstractHostedNodeTemplate;
 
-public class ScalableSoftwareProcessNodeTemplate extends AbstractHostedNodeTemplate implements NoScalableSoftwareProcess{
+public class ScalableSoftwareProcessNodeTemplate extends AbstractHostedNodeTemplate implements ScalableSoftwareProcess{
 
     public ScalableSoftwareProcessNodeTemplate(Map<String, Object> applicationTemplate, String nodeTemplateId) {
         super(applicationTemplate, nodeTemplateId);
     }
+
+    @Override
+    public String getType() {
+        return getDeployerTypesResolver().resolveNodeType(getParentType());
+    }
+
 }

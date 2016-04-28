@@ -209,7 +209,7 @@ public abstract class AbstractNodeTemplate implements NodeTemplate {
         return properties;
     }
 
-    private String getParentType() {
+    protected String getParentType() {
         String moduleType = getModuleType();
 
         if (nodeTypes.containsKey(moduleType)) {
@@ -255,7 +255,7 @@ public abstract class AbstractNodeTemplate implements NodeTemplate {
         return false;
     }
 
-    public void getDeployerIaaSTypeResolver() {
+    private void getDeployerIaaSTypeResolver() {
         try {
             if (deployerTypesResolver == null) {
                 deployerTypesResolver = new DeployerTypesResolver(Resources
@@ -267,7 +267,7 @@ public abstract class AbstractNodeTemplate implements NodeTemplate {
         }
     }
 
-    public void getDeployerPaaSTypeResolver() {
+    private void getDeployerPaaSTypeResolver() {
         try {
             if (deployerTypesResolver == null) {
                 deployerTypesResolver = new DeployerTypesResolver(Resources

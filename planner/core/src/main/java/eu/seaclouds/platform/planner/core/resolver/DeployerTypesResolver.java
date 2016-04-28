@@ -16,27 +16,31 @@
  */
 package eu.seaclouds.platform.planner.core.resolver;
 
-import com.google.common.base.Charsets;
-import com.google.common.io.Resources;
-import eu.seaclouds.platform.planner.core.utils.YamlParser;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.net.URL;
 import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Charsets;
+import com.google.common.io.Resources;
+
+import eu.seaclouds.platform.planner.core.utils.YamlParser;
 
 public class DeployerTypesResolver {
 
     static Logger log = LoggerFactory.getLogger(DeployerTypesResolver.class);
 
     final private static String NODE_TYPES_MAPPING_SECTION = "mapping.node_types";
+    final private static String SCALABLE_NODE_TYPES_MAPPING_SECTION = "mapping.scalable_node_types";
     final private static String RELATIONSHIP_TYPES_MAPPING_SECTION = "mapping.relationship_types";
     final private static String POLICY_TYPES_MAPPING_SECTION = "mapping.policy_types";
     final private static String NODE_TYPES_DEFINITIONS = "node_types";
 
     Map<String, Object> mapping;
     Map<String, String> nodeTypesMapping;
+    Map<String, String> scalableNodeTypesMapping;
     Map<String, String> relationshipTypesMapping;
     Map<String, String> policyTypesMapping;
     Map<String, Object> nodeTypesDefinitions;
@@ -65,6 +69,11 @@ public class DeployerTypesResolver {
             nodeTypesMapping = (Map<String, String>) mapping.get(NODE_TYPES_MAPPING_SECTION);
         }
 
+        if (mapping.containsKey(SCALABLE_NODE_TYPES_MAPPING_SECTION)) {
+            log.debug("Mapping contains Scalable NodeTypes mapping");
+            scalableNodeTypesMapping = (Map<String, String>) mapping.get(SCALABLE_NODE_TYPES_MAPPING_SECTION);
+        }
+
         if (mapping.containsKey(RELATIONSHIP_TYPES_MAPPING_SECTION)) {
             log.debug("Mapping contains NodeTypes mapping");
             relationshipTypesMapping = (Map<String, String>) mapping
@@ -88,6 +97,14 @@ public class DeployerTypesResolver {
             return null;
         }
         return nodeTypesMapping.get(sourceNodeType);
+    }
+
+    public String resolveScalableNodeType(String sourceNodeType) {
+        if (scalableNodeTypesMapping == null) {
+            log.debug("NodeType mapping was not initialized for " + this);
+            return null;
+        }
+        return scalableNodeTypesMapping.get(sourceNodeType);
     }
 
     public String resolveRelationshipType(String sourceRelationshipType) {

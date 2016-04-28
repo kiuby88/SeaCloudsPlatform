@@ -1,7 +1,3 @@
-package eu.seaclouds.platform.planner.core.application;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 /**
  * Copyright 2014 SeaClouds
  * Contact: SeaClouds
@@ -18,6 +14,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package eu.seaclouds.platform.planner.core.application;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class ApplicationMonitorId {
     public String id;
 

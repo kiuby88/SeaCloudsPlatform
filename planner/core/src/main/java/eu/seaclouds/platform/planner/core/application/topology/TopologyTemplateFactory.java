@@ -15,6 +15,7 @@ import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.Host
 import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.NodeTemplate;
 import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.NodeTemplateFactory;
 import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.host.HostNodeTemplate;
+import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.softwareprocess.SoftwareProcess;
 
 public class TopologyTemplateFactory {
 
@@ -116,7 +117,9 @@ public class TopologyTemplateFactory {
             HostedNodeTemplate nodeTemplate = null;
 
             if (NodeTemplateFactory.isSoftwareProcess(module)) {
-                nodeTemplate = NodeTemplateFactory.createSoftwareProcessNodeTemplate(originalAdp, nodeTemplateId);
+
+                nodeTemplate = createSoftwareNodeTemplate(nodeTemplateId, module);
+
             } else if (NodeTemplateFactory.isDatacollector(module)) {
                 nodeTemplate = NodeTemplateFactory.createDatacollectorNodeTemplate(originalAdp, nodeTemplateId);
             }
@@ -124,6 +127,14 @@ public class TopologyTemplateFactory {
                 hostedNodeTemplates.put(nodeTemplateId, nodeTemplate);
                 nodeTemplates.put(nodeTemplateId, nodeTemplate);
             }
+        }
+    }
+
+    private SoftwareProcess createSoftwareNodeTemplate(String nodeTemplteId, Map<String, Object> module){
+        if(NodeTemplateFactory.isScalableSoftwareProcess(module)){
+            return NodeTemplateFactory.createScalableSoftwareProcessNodeTemplate(originalAdp, nodeTemplteId);
+        } else {
+            return NodeTemplateFactory.createNoScalableSoftwareProcessNodeTemplate(originalAdp, nodeTemplteId);
         }
     }
 

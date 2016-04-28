@@ -18,10 +18,15 @@ package eu.seaclouds.platform.planner.core.application.topology.nodetemplate;
 
 import java.util.Map;
 
+import com.google.common.base.Optional;
+
+import eu.seaclouds.platform.planner.core.DamGenerator;
 import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.host.ComputeNodeTemplate;
 import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.host.PlatformNodeTemplate;
 import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.softwareprocess.DatacollectorNodeTemplate;
 import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.softwareprocess.NoScalableSoftwareProcess;
+import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.softwareprocess.NoScalableSoftwareProcessNodeTemplate;
+import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.softwareprocess.ScalableSoftwareProcess;
 import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.softwareprocess.ScalableSoftwareProcessNodeTemplate;
 
 public class NodeTemplateFactory {
@@ -41,8 +46,13 @@ public class NodeTemplateFactory {
         return new DatacollectorNodeTemplate(applicationTemplate, nodeTemplateId);
     }
 
-    public static NoScalableSoftwareProcess createSoftwareProcessNodeTemplate(Map<String, Object> applicationTemplate,
-                                                                                String nodeTemplateId) {
+    public static NoScalableSoftwareProcess createNoScalableSoftwareProcessNodeTemplate(Map<String, Object> applicationTemplate,
+                                                                              String nodeTemplateId) {
+        return new NoScalableSoftwareProcessNodeTemplate(applicationTemplate, nodeTemplateId);
+    }
+
+    public static ScalableSoftwareProcess createScalableSoftwareProcessNodeTemplate(Map<String, Object> applicationTemplate,
+                                                                              String nodeTemplateId) {
         return new ScalableSoftwareProcessNodeTemplate(applicationTemplate, nodeTemplateId);
     }
 
@@ -65,5 +75,21 @@ public class NodeTemplateFactory {
     private static String getModuleType(Map<String, Object> module) {
         return (String) module.get(NodeTemplate.TYPE);
     }
+
+    public static boolean isScalableSoftwareProcess(Map<String, Object> module){
+        boolean scalable = false;
+        Optional<Boolean> foundScalableProperty = findScalableProperty(module);
+        if(foundScalableProperty.isPresent()){
+            scalable = foundScalableProperty.get() && isSoftwareProcess(module);
+        }
+        return scalable;
+    }
+
+    private static Optional<Boolean> findScalableProperty(Map<String, Object> module){
+        Map<String, Object> properties = (Map<String, Object>) module.get(DamGenerator.PROPERTIES);
+        return Optional.fromNullable((Boolean)properties.get(ScalableSoftwareProcess.AUTOSCALE_PROPERTY));
+    }
+
+
 
 }
