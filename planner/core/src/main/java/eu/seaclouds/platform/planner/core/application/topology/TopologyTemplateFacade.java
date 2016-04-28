@@ -34,13 +34,14 @@ import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.Abst
 import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.HostedNodeTemplate;
 import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.NodeTemplate;
 import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.NodeTemplateFactory;
+import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.datacollectors.DatacollectorNodeTemplate;
 import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.host.HostNodeTemplate;
 import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.host.PaasNodeTemplateFacade;
 import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.host.PlatformNodeTemplate;
 
 public class TopologyTemplateFacade {
 
-    private final Map<String, Object> originalAdp;
+    private Map<String, Object> originalAdp;
     private Map<String, Object> originalNodeTemplates;
     private Map<String, Object> topologyTemplate;
 
@@ -150,21 +151,30 @@ public class TopologyTemplateFacade {
 
     @SuppressWarnings("unchecked")
     public void updateNodeTemplates(Map<String, Object> adp) {
+        originalAdp = adp;
         topologyTemplate = (Map<String, Object>) adp.get(DamGenerator.TOPOLOGY_TEMPLATE);
         originalNodeTemplates = (Map<String, Object>) topologyTemplate.get(DamGenerator.NODE_TEMPLATES);
-        updateNoExistNodeTemplate(adp);
+        updateNoExistDatacollectorNodeTemplate(adp);
         updateNodeTemplatesProperties(adp);
     }
 
-    private void updateNoExistNodeTemplate(Map<String, Object> adp) {
+    @SuppressWarnings("unchecked")
+    private void updateNoExistDatacollectorNodeTemplate(Map<String, Object> adp) {
         for (Map.Entry<String, Object> newNodeTemplate : originalNodeTemplates.entrySet()) {
             String nodeTemplateId = newNodeTemplate.getKey();
             if (!contained(nodeTemplateId)) {
-                NodeTemplate nodeTemplate =
-                        NodeTemplateFactory.createNodeTemplate(adp, nodeTemplateId);
-                addNodeTemplate(nodeTemplateId, nodeTemplate);
+                Map<String, Object> module = (Map<String, Object>) originalNodeTemplates.get(nodeTemplateId);
+                if (NodeTemplateFactory.isDatacollector(module)) {
+                    addNewDatacollector(nodeTemplateId);
+                }
             }
         }
+    }
+
+    private void addNewDatacollector(String nodeTemplateId) {
+        DatacollectorNodeTemplate datacollector =
+                NodeTemplateFactory.createDatacollectorNodeTemplate(originalAdp, nodeTemplateId);
+        addHostedNodeTemplate(nodeTemplateId, datacollector);
     }
 
     @SuppressWarnings("unchecked")

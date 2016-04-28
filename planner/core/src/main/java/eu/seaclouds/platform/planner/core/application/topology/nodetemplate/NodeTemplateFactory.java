@@ -18,34 +18,12 @@ package eu.seaclouds.platform.planner.core.application.topology.nodetemplate;
 
 import java.util.Map;
 
-import eu.seaclouds.platform.planner.core.DamGenerator;
-import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.datacollectors.Datacollector;
+import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.datacollectors.DatacollectorNodeTemplate;
 import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.host.ComputeNodeTemplate;
 import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.host.PlatformNodeTemplate;
 import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.softwareprocess.SoftwareProcessNodeTemplate;
 
 public class NodeTemplateFactory {
-
-    public static NodeTemplate createNodeTemplate(Map<String, Object> applicationTemplate,
-                                                  String nodeTemplateId) {
-
-        Map<String, Object> topologyTemplate = (Map<String, Object>) applicationTemplate.get(DamGenerator.TOPOLOGY_TEMPLATE);
-        Map<String, Object> nodeTemplates = (Map<String, Object>) topologyTemplate.get(DamGenerator.NODE_TEMPLATES);
-        Map<String, Object> module = (Map<String, Object>) nodeTemplates.get(nodeTemplateId);
-
-        String moduleType = (String) module.get(NodeTemplate.TYPE);
-
-        if (ComputeNodeTemplate.isSupported(moduleType)) {
-            return new ComputeNodeTemplate(applicationTemplate, nodeTemplateId);
-        } else if (PlatformNodeTemplate.isSupported(moduleType)) {
-            return new PlatformNodeTemplate(applicationTemplate, nodeTemplateId);
-        } else if (Datacollector.isSupported(moduleType)) {
-            return new Datacollector(applicationTemplate, nodeTemplateId);
-        } else {
-            return new SoftwareProcessNodeTemplate(applicationTemplate, nodeTemplateId);
-        }
-
-    }
 
     public static ComputeNodeTemplate createComputeNodeTemplate(Map<String, Object> applicationTemplate,
                                                                 String nodeTemplateId) {
@@ -57,9 +35,9 @@ public class NodeTemplateFactory {
         return new PlatformNodeTemplate(applicationTemplate, nodeTemplateId);
     }
 
-    public static Datacollector createDatacollectorNodeTemplate(Map<String, Object> applicationTemplate,
-                                                                String nodeTemplateId) {
-        return new Datacollector(applicationTemplate, nodeTemplateId);
+    public static DatacollectorNodeTemplate createDatacollectorNodeTemplate(Map<String, Object> applicationTemplate,
+                                                                            String nodeTemplateId) {
+        return new DatacollectorNodeTemplate(applicationTemplate, nodeTemplateId);
     }
 
     public static SoftwareProcessNodeTemplate createSoftwareProcessNodeTemplate(Map<String, Object> applicationTemplate,
@@ -76,7 +54,7 @@ public class NodeTemplateFactory {
     }
 
     public static boolean isDatacollector(Map<String, Object> module) {
-        return Datacollector.isSupported(getModuleType(module));
+        return DatacollectorNodeTemplate.isSupported(getModuleType(module));
     }
 
     public static boolean isSoftwareProcess(Map<String, Object> module) {

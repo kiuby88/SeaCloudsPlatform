@@ -5,14 +5,14 @@ import org.apache.brooklyn.util.collections.MutableMap;
 
 import java.util.Map;
 
-public class Datacollector extends AbstractHostedNodeTemplate {
+public class DatacollectorNodeTemplate extends AbstractHostedNodeTemplate {
 
     private static final String SUPPORTED_TYPES = "seaclouds.nodes.Datacollector";
     private static final String INTERFACES = "interfaces";
 
     private Map<String, Object> interfaces;
 
-    public Datacollector(Map<String, Object> applicationTemplate, String nodeTemplateId) {
+    public DatacollectorNodeTemplate(Map<String, Object> applicationTemplate, String nodeTemplateId) {
         super(applicationTemplate, nodeTemplateId);
     }
 
