@@ -14,27 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package eu.seaclouds.platform.planner.core.application.topology.nodetemplate;
+package eu.seaclouds.platform.planner.core.application.topology.nodetemplate.softwareprocess;
 
 import java.util.Map;
 
-import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.host.HostNodeTemplate;
+import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.AbstractHostedNodeTemplate;
 
-public abstract class AbstractHostedNodeTemplate extends AbstractNodeTemplate implements HostedNodeTemplate {
+public class ScalableSoftwareProcessNodeTemplate extends AbstractHostedNodeTemplate implements NoScalableSoftwareProcess{
 
-    protected HostNodeTemplate hostNodeTemplate;
-
-    public AbstractHostedNodeTemplate(Map<String, Object> applicationTemplate, String nodeTemplateId) {
+    public ScalableSoftwareProcessNodeTemplate(Map<String, Object> applicationTemplate, String nodeTemplateId) {
         super(applicationTemplate, nodeTemplateId);
     }
-
-    public void setHostNodeTemplate(HostNodeTemplate host) {
-        this.hostNodeTemplate = hostNodeTemplate;
-    }
-
-    public HostNodeTemplate getHostNodeTemplate() {
-        return hostNodeTemplate;
-    }
-
-
 }

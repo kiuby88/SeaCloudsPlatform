@@ -18,10 +18,11 @@ package eu.seaclouds.platform.planner.core.application.topology.nodetemplate;
 
 import java.util.Map;
 
-import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.datacollectors.DatacollectorNodeTemplate;
 import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.host.ComputeNodeTemplate;
 import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.host.PlatformNodeTemplate;
-import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.softwareprocess.SoftwareProcessNodeTemplate;
+import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.softwareprocess.DatacollectorNodeTemplate;
+import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.softwareprocess.NoScalableSoftwareProcess;
+import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.softwareprocess.ScalableSoftwareProcessNodeTemplate;
 
 public class NodeTemplateFactory {
 
@@ -40,9 +41,9 @@ public class NodeTemplateFactory {
         return new DatacollectorNodeTemplate(applicationTemplate, nodeTemplateId);
     }
 
-    public static SoftwareProcessNodeTemplate createSoftwareProcessNodeTemplate(Map<String, Object> applicationTemplate,
+    public static NoScalableSoftwareProcess createSoftwareProcessNodeTemplate(Map<String, Object> applicationTemplate,
                                                                                 String nodeTemplateId) {
-        return new SoftwareProcessNodeTemplate(applicationTemplate, nodeTemplateId);
+        return new ScalableSoftwareProcessNodeTemplate(applicationTemplate, nodeTemplateId);
     }
 
     public static boolean isComputeHost(Map<String, Object> module) {
