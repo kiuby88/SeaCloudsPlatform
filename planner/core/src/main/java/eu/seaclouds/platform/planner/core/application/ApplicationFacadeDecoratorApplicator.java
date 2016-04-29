@@ -17,6 +17,7 @@
 package eu.seaclouds.platform.planner.core.application;
 
 
+import eu.seaclouds.platform.planner.core.application.decorators.AutoscalingPoliciesDecorator;
 import eu.seaclouds.platform.planner.core.application.decorators.MissingPolicyTypesDecorator;
 import eu.seaclouds.platform.planner.core.application.decorators.MonitoringInformationDecorator;
 import eu.seaclouds.platform.planner.core.application.decorators.SeaCloudsManagementPolicyDecorator;
@@ -31,6 +32,8 @@ public class ApplicationFacadeDecoratorApplicator {
 
         SlaInformationDecorator slaInformationDecorator = new SlaInformationDecorator();
         slaInformationDecorator.apply(applicationFacade);
+
+        new AutoscalingPoliciesDecorator().apply(applicationFacade);
 
         SeaCloudsManagementPolicyDecorator seaCloudsManagmentPolicyDecorator =
                 new SeaCloudsManagementPolicyDecorator();

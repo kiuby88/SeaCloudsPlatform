@@ -16,9 +16,11 @@
  */
 package eu.seaclouds.platform.planner.core.application.topology.nodetemplate.softwareprocess;
 
+import com.google.common.base.Optional;
+
 public interface ScalableSoftwareProcess extends SoftwareProcess{
 
     public static final String AUTOSCALE_PROPERTY = "autoscale";
 
-
+    public Optional<String> targetScalableMetric(String metricId);
 }

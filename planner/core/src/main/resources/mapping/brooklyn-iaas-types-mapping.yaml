@@ -22,8 +22,18 @@ mapping.node_types:
   seaclouds.nodes.php.httpd.PhpHttpdServer: org.apache.brooklyn.entity.php.httpd.PhpHttpdServer
   seaclouds.nodes.Compute: tosca.nodes.Compute
 
+mapping.scalable_node_types:
+  seaclouds.nodes.webapp.jboss.JBoss6Server: org.apache.brooklyn.entity.webapp.ControlledDynamicWebAppCluster
+  seaclouds.nodes.webapp.jboss.JBoss7Server: org.apache.brooklyn.entity.webapp.ControlledDynamicWebAppCluster
+  seaclouds.nodes.webapp.jetty.Jetty6Server: org.apache.brooklyn.entity.webapp.ControlledDynamicWebAppCluster
+  seaclouds.nodes.webapp.tomcat.TomcatServer: org.apache.brooklyn.entity.webapp.ControlledDynamicWebAppCluster
+  seaclouds.nodes.webapp.tomcat.Tomcat8Server: org.apache.brooklyn.entity.webapp.ControlledDynamicWebAppCluster
+
 mapping.policy_types:
   seaclouds.policies.autoscaling.AutoScalerPolicy: org.apache.brooklyn.policy.autoscaling.AutoScalerPolicy
+
+mapping.metrics:
+  seaclouds.metrics.requestPerNode: webapp.reqs.perSec.windowed.perNode
 
 node_types:
   seaclouds.nodes.Compute:

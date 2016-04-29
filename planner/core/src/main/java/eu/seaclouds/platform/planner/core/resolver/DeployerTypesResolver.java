@@ -37,13 +37,15 @@ public class DeployerTypesResolver {
     final private static String RELATIONSHIP_TYPES_MAPPING_SECTION = "mapping.relationship_types";
     final private static String POLICY_TYPES_MAPPING_SECTION = "mapping.policy_types";
     final private static String NODE_TYPES_DEFINITIONS = "node_types";
+    final private static String METRIC_MAPPING_SECTION = "mapping.metrics";
 
-    Map<String, Object> mapping;
-    Map<String, String> nodeTypesMapping;
-    Map<String, String> scalableNodeTypesMapping;
-    Map<String, String> relationshipTypesMapping;
-    Map<String, String> policyTypesMapping;
-    Map<String, Object> nodeTypesDefinitions;
+    private Map<String, Object> mapping;
+    private Map<String, String> nodeTypesMapping;
+    private Map<String, String> scalableNodeTypesMapping;
+    private Map<String, String> relationshipTypesMapping;
+    private Map<String, String> policyTypesMapping;
+    private Map<String, Object> nodeTypesDefinitions;
+    private Map<String, String> metricsMapping;
 
     public DeployerTypesResolver(String mappingFile) throws IOException {
         this(new URL(mappingFile));
@@ -89,6 +91,11 @@ public class DeployerTypesResolver {
             log.debug("Mapping contains Policy mapping");
             policyTypesMapping = (Map<String, String>) mapping.get(POLICY_TYPES_MAPPING_SECTION);
         }
+
+        if (mapping.containsKey(METRIC_MAPPING_SECTION)) {
+            log.debug("Mapping contains metric");
+            metricsMapping = (Map<String, String>) mapping.get(METRIC_MAPPING_SECTION);
+        }
     }
 
     public String resolveNodeType(String sourceNodeType) {
@@ -129,6 +136,14 @@ public class DeployerTypesResolver {
             return null;
         }
         return policyTypesMapping.get(sourcePolicyType);
+    }
+
+    public String resolveMetric(String metricId){
+        if (metricsMapping == null) {
+            log.debug("Metric mapping was not initialized for " + this);
+            return null;
+        }
+        return metricsMapping.get(metricId);
     }
 
 }

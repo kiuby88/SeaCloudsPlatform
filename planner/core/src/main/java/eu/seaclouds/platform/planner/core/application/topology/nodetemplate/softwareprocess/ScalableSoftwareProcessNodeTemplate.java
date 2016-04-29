@@ -18,6 +18,8 @@ package eu.seaclouds.platform.planner.core.application.topology.nodetemplate.sof
 
 import java.util.Map;
 
+import com.google.common.base.Optional;
+
 import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.AbstractHostedNodeTemplate;
 
 public class ScalableSoftwareProcessNodeTemplate extends AbstractHostedNodeTemplate implements ScalableSoftwareProcess{
@@ -28,7 +30,11 @@ public class ScalableSoftwareProcessNodeTemplate extends AbstractHostedNodeTempl
 
     @Override
     public String getType() {
-        return getDeployerTypesResolver().resolveNodeType(getParentType());
+        return getDeployerTypesResolver().resolveScalableNodeType(getParentType());
     }
 
+    @Override
+    public Optional<String> targetScalableMetric(String metricId) {
+        return Optional.fromNullable(getDeployerTypesResolver().resolveMetric(metricId));
+    }
 }

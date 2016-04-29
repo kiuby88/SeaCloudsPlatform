@@ -23,6 +23,8 @@ import org.apache.brooklyn.util.collections.MutableMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Optional;
+
 import eu.seaclouds.monitor.monitoringdamgenerator.MonitoringInfo;
 import eu.seaclouds.platform.planner.core.DamGenerator;
 import eu.seaclouds.platform.planner.core.DamGeneratorConfigBag;
@@ -31,6 +33,7 @@ import eu.seaclouds.platform.planner.core.application.topology.TopologyTemplateF
 import eu.seaclouds.platform.planner.core.application.topology.TopologyTemplateFactory;
 import eu.seaclouds.platform.planner.core.application.topology.modifier.relation.TopologFacadeyModifierApplicator;
 import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.NodeTemplate;
+import eu.seaclouds.platform.planner.core.application.topology.nodetemplate.softwareprocess.ScalableSoftwareProcess;
 import eu.seaclouds.platform.planner.core.utils.YamlParser;
 
 public class ApplicationFacade {
@@ -105,6 +108,15 @@ public class ApplicationFacade {
 
     public String templateToString() {
         return YamlParser.dump(template);
+    }
+
+    public Optional<String> resolveMetric(String nodeTemplateId, String metricId) {
+        NodeTemplate nodeTemplate = topologyTemplate.getNodeTemplates().get(nodeTemplateId);
+        if(nodeTemplate instanceof ScalableSoftwareProcess) {
+            return ((ScalableSoftwareProcess)nodeTemplate).targetScalableMetric(metricId);
+        } else {
+            return Optional.absent();
+        }
     }
 
     public void generateDam() {
@@ -210,5 +222,7 @@ public class ApplicationFacade {
         }
         setNodeTypes(usedNodeTemplates);
     }
+
+
 
 }
