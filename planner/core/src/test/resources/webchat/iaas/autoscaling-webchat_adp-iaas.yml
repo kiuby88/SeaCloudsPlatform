@@ -22,8 +22,6 @@ topology_template:
           type: seaclouds.relations.databaseconnections.jdbc
           properties:
             prop.name: brooklyn.example.db.url
-      - host: Amazon_EC2_t1_micro_us_west_2_webapp
-        instancesPOC: 9
     database:
       type: sc_req.database
       properties:
@@ -41,21 +39,7 @@ topology_template:
       requirements:
       - host: Amazon_EC2_c3_2xlarge_eu_west_1_database
         instancesPOC: 1
-    Amazon_EC2_t1_micro_us_west_2_webapp:
-      type: seaclouds.nodes.Compute.Amazon_EC2
-      properties:
-        num_cpus: 1
-        country: United States
-        cost: 0.025
-        hardwareId: t1.micro
-        city: PORTLAND
-        resource_type: compute
-        location: aws-ec2
-        availability: 0.9995
-        region: us-west-2
-        ram: 0.61
-        performance: 183
-        continent: America
+
     Amazon_EC2_c3_2xlarge_eu_west_1_database:
       type: seaclouds.nodes.Compute.Amazon_EC2
       properties:
@@ -130,14 +114,7 @@ groups:
         fitnessPOC: 28.665067945643237
         expectedCostPOC: 500.4
         expectedExecutionTimePOC: 0.6838338031621523
-    - autoscaling:
-        autoscaler.resizeDownStabilizationDelay: 120000
-        maxPoolSize: 37
-        metric: seaclouds.metrics.requestPerNode
-        minPoolSize: 1
-        metricUpperBound: 11.88888888888889
-        type: seaclouds.policies.autoscaling.AutoScalerPolicy
-        metricLowerBound: 5.944444444444445
+
   operation_database:
     members:
     - database

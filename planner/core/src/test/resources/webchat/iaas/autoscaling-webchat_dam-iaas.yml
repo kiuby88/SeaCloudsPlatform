@@ -5,21 +5,6 @@ imports:
 - seaclouds-types:0.8.0-SNAPSHOT
 topology_template:
   node_templates:
-    Amazon_EC2_t1_micro_us_west_2_webapp:
-      properties:
-        num_cpus: 1
-        country: United States
-        cost: 0.025
-        hardwareId: t1.micro
-        city: PORTLAND
-        resource_type: compute
-        location: aws-ec2
-        availability: 0.9995
-        region: us-west-2
-        ram: 0.61
-        performance: 183
-        continent: America
-      type: tosca.nodes.Compute
     Amazon_EC2_c3_2xlarge_eu_west_1_database:
       properties:
         num_cpus: 8
@@ -40,7 +25,6 @@ topology_template:
       type: tosca.nodes.Compute
     webapp:
       requirements:
-      - host: Amazon_EC2_t1_micro_us_west_2_webapp
       - dbConnection:
           node: database
           relationship: brooklyn.relationships.Configure
@@ -78,27 +62,6 @@ topology_template:
           - less_or_equal: '5.6'
         creationScriptUrl: https://raw.githubusercontent.com/apache/incubator-brooklyn/master/brooklyn-server/launcher/src/test/resources/visitors-creation-script.sql
       type: org.apache.brooklyn.entity.database.mysql.MySqlNode
-    modacloudsDc_webapp:
-      requirements:
-      - host: Amazon_EC2_t1_micro_us_west_2_webapp
-      properties:
-        shell.env:
-          MODACLOUDS_TOWER4CLOUDS_DC_SYNC_PERIOD: '10'
-          MODACLOUDS_TOWER4CLOUDS_VM_ID: Amazon_EC2_t1_micro_us_west_2_webapp_ID
-          MODACLOUDS_TOWER4CLOUDS_INFLUXDB_IP: 52.48.187.2
-          MODACLOUDS_TOWER4CLOUDS_MANAGER_PORT: '8170'
-          MODACLOUDS_TOWER4CLOUDS_INTERNAL_COMPONENT_ID: webapp_ID
-          MODACLOUDS_TOWER4CLOUDS_INFLUXDB_PORT: '8086'
-          METRICS: AverageCpuUtilization;AverageRamUtilization
-          MODACLOUDS_TOWER4CLOUDS_RESOURCES_KEEP_ALIVE_PERIOD: '25'
-          MODACLOUDS_TOWER4CLOUDS_MANAGER_IP: 52.48.187.2
-          MODACLOUDS_TOWER4CLOUDS_VM_TYPE: Amazon_EC2_t1_micro_us_west_2_webapp
-          MODACLOUDS_TOWER4CLOUDS_INTERNAL_COMPONENT_TYPE: webapp
-        installLatch: $brooklyn:component("webapp").attributeWhenReady("service.isUp")
-      type: seaclouds.nodes.Datacollector
-      interfaces:
-        Standard:
-          start: https://s3-eu-west-1.amazonaws.com/modacloudsdc-start-script/installModacloudsDc.sh
     modacloudsDc_database:
       requirements:
       - host: Amazon_EC2_c3_2xlarge_eu_west_1_database
@@ -198,9 +161,9 @@ topology_template:
           grafanaEndpoint: http://127.0.0.4:1234
           grafanaUsername: admin
           grafanaPassword: admin
-    add_brooklyn_location_Amazon_EC2_t1_micro_us_west_2_webapp:
+    add_brooklyn_location_webapp:
       members:
-      - Amazon_EC2_t1_micro_us_west_2_webapp
+      - webapp
       policies:
       - brooklyn.location:
           jclouds:aws-ec2:
