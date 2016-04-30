@@ -1,0 +1,82 @@
+{
+  "id": "FGDn0ucW",
+  "displayName": "migrate",
+  "description": "Invoking effector migrate on Chat with parameters {locationSpec=aws-ec2:eu-central-1}",
+  "entityId": "YKq5PjYc",
+  "entityDisplayName": "Chat",
+  "tags": [
+    {
+      "entitlementContext": {
+        "user": null,
+        "sourceIp": "0:0:0:0:0:0:0:1",
+        "requestUri": "/v1/applications/zC9z8XeN/entities/YKq5PjYc/effectors/migrate",
+        "requestUniqueIdentifier": "pE0O9x"
+      }
+    },
+    {
+      "entityId": "YKq5PjYc",
+      "effectorName": "migrate"
+    },
+    {
+      "wrappingType": "targetEntity",
+      "entity": {
+        "type": "org.apache.brooklyn.api.entity.Entity",
+        "id": "YKq5PjYc"
+      }
+    },
+    "EFFECTOR",
+    {
+      "entitlementContext": {
+        "user": null,
+        "sourceIp": "0:0:0:0:0:0:0:1",
+        "requestUri": "/v1/applications/zC9z8XeN/entities/YKq5PjYc/effectors/migrate",
+        "requestUniqueIdentifier": "pE0O9x"
+      }
+    },
+    {
+      "type": "org.apache.brooklyn.core.mgmt.internal.LocalManagementContext"
+    },
+    {
+      "wrappingType": "contextEntity",
+      "entity": {
+        "type": "org.apache.brooklyn.api.entity.Entity",
+        "id": "YKq5PjYc"
+      }
+    }
+  ],
+  "submitTimeUtc": 1462217167046,
+  "startTimeUtc": 1462217167046,
+  "endTimeUtc": null,
+  "currentStatus": "In progress",
+  "result": null,
+  "isError": false,
+  "isCancelled": false,
+  "children": [
+    {
+      "link": "/v1/activities/d1S1XIyt",
+      "metadata": {
+        "id": "d1S1XIyt",
+        "taskName": "stop",
+        "entityId": "YKq5PjYc",
+        "entityDisplayName": "Chat"
+      }
+    }
+  ],
+  "submittedByTask": null,
+  "blockingTask": {
+    "link": "/v1/activities/d1S1XIyt",
+    "metadata": {
+      "id": "d1S1XIyt",
+      "taskName": "stop",
+      "entityId": "YKq5PjYc",
+      "entityDisplayName": "Chat"
+    }
+  },
+  "detailedStatus": "Waiting on Task[stop]@d1S1XIyt\n\nTask[migrate]@FGDn0ucW\nChildren:\n  Task[stop]@d1S1XIyt: Waiting on Task[stopping (process)]@he9E8gXR\n\nIn progress, thread waiting (notify) on java.util.concurrent.FutureTask@52c172a9\nAt: com.google.common.util.concurrent.ForwardingFuture.get(ForwardingFuture.java:63)\n    org.apache.brooklyn.util.core.task.BasicTask.blockUntilEnded(BasicTask.java:417)\n    org.apache.brooklyn.util.core.task.BasicTask.blockUntilEnded(BasicTask.java:407)\n    org.apache.brooklyn.entity.migration.MJBoss7ServerImpl.migrate(MJBoss7ServerImpl.java:62)\n    org.apache.brooklyn.util.groovy.GroovyJavaMethods.invokeMethodOnMetaClass(GroovyJavaMethods.java:191)\n    org.apache.brooklyn.core.mgmt.internal.AbstractManagementContext.invokeEffectorMethodLocal(AbstractManagementContext.java:309)\n    org.apache.brooklyn.core.mgmt.internal.AbstractManagementContext.invokeEffectorMethodSync(AbstractManagementContext.java:333)\n    org.apache.brooklyn.core.mgmt.internal.EffectorUtils.invokeMethodEffector(EffectorUtils.java:255)\n    org.apache.brooklyn.core.effector.MethodEffector.call(MethodEffector.java:149)\n    org.apache.brooklyn.core.effector.AbstractEffector.call(AbstractEffector.java:61)\n    org.apache.brooklyn.core.effector.AbstractEffector$1$1.call(AbstractEffector.java:83)\n    org.apache.brooklyn.util.core.task.DynamicSequentialTask$DstJob.call(DynamicSequentialTask.java:359)\n    org.apache.brooklyn.util.core.task.BasicExecutionManager$SubmissionCallable.call(BasicExecutionManager.java:519)",
+  "streams": {},
+  "links": {
+    "self": "/v1/activities/FGDn0ucW",
+    "children": "/v1/activities/FGDn0ucW/children",
+    "entity": "/v1/applications/zC9z8XeN/entities/YKq5PjYc"
+  }
+}

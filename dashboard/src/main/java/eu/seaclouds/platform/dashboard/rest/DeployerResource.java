@@ -18,32 +18,44 @@
 package eu.seaclouds.platform.dashboard.rest;
 
 
+import java.io.IOException;
+import java.util.List;
+
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
+import org.apache.brooklyn.rest.domain.ApplicationSummary;
+import org.apache.brooklyn.rest.domain.EffectorSummary;
+import org.apache.brooklyn.rest.domain.TaskSummary;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.codahale.metrics.annotation.Timed;
 import com.fasterxml.jackson.databind.JsonNode;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import com.google.common.base.Optional;
+
 import eu.atos.sla.datamodel.IGuaranteeTerm;
 import eu.atos.sla.parser.data.GuaranteeTermsStatus;
 import eu.seaclouds.platform.dashboard.model.SeaCloudsApplicationData;
 import eu.seaclouds.platform.dashboard.model.SeaCloudsApplicationDataStorage;
 import eu.seaclouds.platform.dashboard.proxy.DeployerProxy;
 import eu.seaclouds.platform.dashboard.proxy.SlaProxy;
-import org.apache.brooklyn.rest.domain.ApplicationSummary;
-import org.apache.brooklyn.rest.domain.TaskSummary;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import java.io.IOException;
-import java.util.List;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 
 @Path("/deployer")
 @Api("/deployer")
 public class DeployerResource implements Resource {
     private static final Logger LOG = LoggerFactory.getLogger(DeployerResource.class);
+
+    public static final String MIGRATE_EFFECTOR = "migrate";
 
     private final DeployerProxy deployer;
     private final SlaProxy sla;
@@ -121,7 +133,7 @@ public class DeployerResource implements Resource {
             }
 
             for (JsonNode application : deployer.getApplicationsTree()) {
-                if(application.get("id").asText().equals(seaCloudsApplicationData.getDeployerApplicationId())){
+                if (application.get("id").asText().equals(seaCloudsApplicationData.getDeployerApplicationId())) {
                     return Response.ok(application).build();
                 }
             }
@@ -149,6 +161,30 @@ public class DeployerResource implements Resource {
         dataStore.removeSeaCloudsApplicationDataById(seaCloudsApplicationData.getSeaCloudsApplicationId());
 
         return Response.ok().build();
+    }
+
+    @POST
+    @Timed
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/applications/{seaCloudsId}/entities/{entity}/migrate")
+    @ApiOperation("Migrates the current entity to another location. It will free the provisioned resources"
+            + " used by the former location")
+    public Response migrateEntity(@PathParam("seaCloudsId") String seaCloudsId,
+                                  @PathParam("entity") String entity,
+                                  @ApiParam("newLocation") String newLocation)
+            throws IOException {
+        if ((seaCloudsId == null) || (entity == null) || (newLocation == null)) {
+            LOG.error("Missing input parameters");
+            return Response.status(Response.Status.NOT_ACCEPTABLE).build();
+        } else {
+            Optional<EffectorSummary> effector = deployer.getEffector(seaCloudsId, entity, MIGRATE_EFFECTOR);
+            if (effector.isPresent()) {
+                TaskSummary summary = deployer.postEffector(seaCloudsId, entity, MIGRATE_EFFECTOR, newLocation);
+                return Response.ok(summary.getEntityId()).build();
+            } else {
+                return Response.status(Response.Status.BAD_REQUEST).build();
+            }
+        }
     }
 
 
