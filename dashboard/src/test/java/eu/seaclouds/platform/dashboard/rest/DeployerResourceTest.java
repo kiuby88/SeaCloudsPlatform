@@ -18,11 +18,18 @@
 package eu.seaclouds.platform.dashboard.rest;
 
 import eu.seaclouds.platform.dashboard.model.SeaCloudsApplicationData;
+import eu.seaclouds.platform.dashboard.proxy.DeployerProxy;
+import eu.seaclouds.platform.dashboard.utils.TestFixtures;
+import eu.seaclouds.platform.dashboard.utils.TestUtils;
+
 import org.testng.annotations.Test;
+import org.testng.util.Strings;
 
 import java.util.List;
 
 import static org.testng.Assert.*;
+
+import javax.ws.rs.core.Response;
 
 public class DeployerResourceTest extends AbstractResourceTest<DeployerResource> {
 
@@ -68,5 +75,35 @@ public class DeployerResourceTest extends AbstractResourceTest<DeployerResource>
         deployerResource.removeApplication(application.getSeaCloudsApplicationId());
         list = (List<SeaCloudsApplicationData>) deployerResource.listApplications().getEntity();
         assertEquals(list.size(), 2);
+    }
+
+    @Test
+    public void testMigrateApplication() throws Exception {
+        String response = (String) deployerResource.migrateEntity(RANDOM_STRING, RANDOM_STRING, getLoc()).getEntity();
+        assertFalse(Strings.isNullOrEmpty(response));
+    }
+
+    @Test
+    public void testMigrateApplicationFalse() throws Exception {
+
+        DeployerProxy d = new DeployerProxy();
+        d.setHost("127.0.0.1");
+        d.setPort(8081);
+        d.setUser("admin");
+        d.setPassword("seaclouds");
+        assertNotNull(d);
+
+        String loc = TestUtils.getStringFromPath(TestFixtures.NER_TARGET_LOCATION_PATH);
+
+        DeployerResource d2 = new DeployerResource(d, getSlaProxy());
+        String response = (String) d2.migrateEntity("zC9z8XeN", "YKq5PjYc", loc).getEntity();
+        assertFalse(Strings.isNullOrEmpty(response));
+
+        //SeaCloudsApplicationData application = (SeaCloudsApplicationData) deployerResource.addApplication(getDam()).getEntity();
+        //assertNotNull(application.getName());
+        //assertNotNull(application.getToscaDam());
+        //assertNotNull(application.getAgreementId());
+        //assertNotNull(application.getDeployerApplicationId());
+        //assertNotNull(application.getMonitoringRulesIds());
     }
 }

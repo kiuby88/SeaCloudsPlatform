@@ -17,22 +17,22 @@
 
 package eu.seaclouds.platform.dashboard.proxy;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import eu.seaclouds.platform.dashboard.util.ObjectMapperHelpers;
-import org.apache.brooklyn.rest.domain.ApplicationSummary;
+import java.io.IOException;
+import java.util.List;
+import java.util.concurrent.Future;
 
-import org.apache.brooklyn.rest.domain.EntitySummary;
-import org.apache.brooklyn.rest.domain.SensorSummary;
-import org.apache.brooklyn.rest.domain.TaskSummary;
-import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
-
-import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.core.GenericType;
-import javax.ws.rs.core.MediaType;
-import java.io.IOException;
-import java.util.List;
+
+import org.apache.brooklyn.rest.domain.ApplicationSummary;
+import org.apache.brooklyn.rest.domain.EffectorSummary;
+import org.apache.brooklyn.rest.domain.EntitySummary;
+import org.apache.brooklyn.rest.domain.SensorSummary;
+import org.apache.brooklyn.rest.domain.TaskSummary;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.base.Optional;
 
 
 public class DeployerProxy extends AbstractProxy {
@@ -58,7 +58,6 @@ public class DeployerProxy extends AbstractProxy {
         Invocation invocation = getJerseyClient().target(getEndpoint() + "/v1/applications/fetch").request().buildGet();
         return invocation.invoke().readEntity(JsonNode.class);
     }
-
 
     /**
      * Creates a proxied HTTP DELETE request to Apache Brooklyn to remove an application
@@ -93,13 +92,14 @@ public class DeployerProxy extends AbstractProxy {
         Invocation invocation = getJerseyClient().target(getEndpoint() + "/v1/applications/" + brooklynId + "/entities")
                 .request().buildGet();
 
-        return invocation.invoke().readEntity(new GenericType<List<EntitySummary>>(){});
+        return invocation.invoke().readEntity(new GenericType<List<EntitySummary>>() {
+        });
     }
 
     /**
      * Creates a proxied HTTP GET request to Apache Brooklyn to retrieve Sensors from a particular Entity
      *
-     * @param brooklynId of the desired application to fetch. This ID may differ from SeaClouds Application ID
+     * @param brooklynId       of the desired application to fetch. This ID may differ from SeaClouds Application ID
      * @param brooklynEntityId of the desired entity. This Entity ID should be children of brooklynId
      * @return List<SensorSummary> with the entity sensors
      */
@@ -108,15 +108,16 @@ public class DeployerProxy extends AbstractProxy {
                 .target(getEndpoint() + "/v1/applications/" + brooklynId + "/entities/" + brooklynEntityId + "/sensors")
                 .request().buildGet();
 
-        return invocation.invoke().readEntity(new GenericType<List<SensorSummary>>(){});
+        return invocation.invoke().readEntity(new GenericType<List<SensorSummary>>() {
+        });
     }
 
     /**
      * Creates a proxied HTTP GET request to Apache Brooklyn to retrieve Sensors from a particular Entity
      *
-     * @param brooklynId of the desired application to fetch. This ID may differ from SeaClouds Application ID
+     * @param brooklynId       of the desired application to fetch. This ID may differ from SeaClouds Application ID
      * @param brooklynEntityId of the desired entity. This Entity ID should be children of brooklynId
-     * @param sensorId of the desired sensor. This Sensor ID should be children of brooklynEntityid
+     * @param sensorId         of the desired sensor. This Sensor ID should be children of brooklynEntityid
      * @return String representing the sensor value
      */
     public String getEntitySensorsValue(String brooklynId, String brooklynEntityId, String sensorId) throws IOException {
@@ -126,4 +127,40 @@ public class DeployerProxy extends AbstractProxy {
 
         return invocation.invoke().readEntity(String.class);
     }
+
+    public List<EffectorSummary> getEffectors(String appId, String entityId) {
+        Invocation invocation = getJerseyClient().target(getEndpoint() + "/v1/applications/"
+                + appId + "/entities/" + entityId + "/effectors").request().buildGet();
+        return invocation.invoke().readEntity(new GenericType<List<EffectorSummary>>() {
+        });
+    }
+
+    public Optional<EffectorSummary> getEffector(String appId, String entityId, String effectorName) {
+        for (EffectorSummary effectorSummary : getEffectors(appId, entityId)) {
+            if (effectorSummary.getName().equals(effectorName)) {
+                return Optional.of(effectorSummary);
+            }
+        }
+        return Optional.absent();
+    }
+
+    /**
+     * Invokes an effector of an particular entity. The method returns an exception if any
+     * problem is found.
+     * @param brooklynId of the application Id
+     * @param brooklynEntityId entity
+     * @param effectorId
+     * @param newLocationDescription
+     * @return
+     */
+    public TaskSummary postEffector(String brooklynId, String brooklynEntityId, String effectorId, String newLocationDescription) {
+        Entity content = Entity.entity(newLocationDescription, "application/json");
+        Invocation invocation = getJerseyClient().target(getEndpoint() + "/v1/applications/"
+                + brooklynId + "/entities/" + brooklynEntityId + "/effectors/" + effectorId)
+                .queryParam("timeout", "1000")
+                .request().buildPost(content);
+        return invocation.invoke(TaskSummary.class);
+    }
+
+
 }

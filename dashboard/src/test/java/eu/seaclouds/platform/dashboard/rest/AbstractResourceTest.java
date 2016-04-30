@@ -19,6 +19,9 @@ package eu.seaclouds.platform.dashboard.rest;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
+
 import eu.atos.sla.parser.data.GuaranteeTermsStatus;
 import eu.atos.sla.parser.data.Penalty;
 import eu.atos.sla.parser.data.Violation;
@@ -32,6 +35,7 @@ import eu.seaclouds.platform.dashboard.utils.TestUtils;
 import it.polimi.tower4clouds.rules.MonitoringRules;
 
 import org.apache.brooklyn.rest.domain.ApplicationSummary;
+import org.apache.brooklyn.rest.domain.EffectorSummary;
 import org.apache.brooklyn.rest.domain.EntitySummary;
 import org.apache.brooklyn.rest.domain.SensorSummary;
 import org.apache.brooklyn.rest.domain.TaskSummary;
@@ -54,7 +58,6 @@ import static org.mockito.Mockito.when;
 public abstract class AbstractResourceTest<T extends Resource> {
     protected static final String RANDOM_STRING = UUID.randomUUID().toString();
     private static final String DEPLOYER_ENDPOINT = "http://localhost:8081";
-    private static final String MONITOR_ENDPOINT = "http://localhost:8170";
     private static final String GRAFANA_ENDPOINT = "http://localhost:3000";
     private static final String PLANNER_ENDPOINT = "http://localhost:1234";
     private static final String SLA_ENDPOINT = "http://localhost:8080";
@@ -63,6 +66,7 @@ public abstract class AbstractResourceTest<T extends Resource> {
     private JsonNode applicationTree;
     private TaskSummary taskSummaryDeploy;
     private TaskSummary taskSummaryDelete;
+    private TaskSummary effectorTaskSummaries;
     private List<SensorSummary> sensorSummaries;
     private List<EntitySummary> entitySummaries;
     private Agreement agreement;
@@ -75,11 +79,14 @@ public abstract class AbstractResourceTest<T extends Resource> {
     private String adps;
     private String aam;
     private String dam;
+    private String loc;
 
     private final DeployerProxy deployerProxy = mock(DeployerProxy.class);
     private final PlannerProxy plannerProxy = mock(PlannerProxy.class);
     private final SlaProxy slaProxy = mock(SlaProxy.class);
     private final GrafanaProxy grafanaProxy = mock(GrafanaProxy.class);
+
+    private final Optional<EffectorSummary> effectorSummary = mock(Optional.class);
 
     private void initObjects() throws IOException, JAXBException {
         applicationSummary = ObjectMapperHelpers.JsonToObject(
@@ -95,6 +102,8 @@ public abstract class AbstractResourceTest<T extends Resource> {
         entitySummaries = ObjectMapperHelpers.JsonToObjectCollection(
                 TestUtils.getStringFromPath(TestFixtures.ENTITIES_PATH), EntitySummary.class);
 
+        effectorTaskSummaries = ObjectMapperHelpers.JsonToObject(
+                TestUtils.getStringFromPath(TestFixtures.TASK_SUMMARY_MIGRATION_PATH), TaskSummary.class);
 
         agreement = ObjectMapperHelpers.JsonToObject(
                 TestUtils.getStringFromPath(TestFixtures.AGREEMENT_PATH_JSON), Agreement.class);
@@ -110,6 +119,9 @@ public abstract class AbstractResourceTest<T extends Resource> {
         adps = TestUtils.getStringFromPath(TestFixtures.ADPS_PATH);
         aam = TestUtils.getStringFromPath(TestFixtures.AAM_PATH);
         dam = TestUtils.getStringFromPath(TestFixtures.TOSCA_DAM_PATH);
+
+        loc = TestUtils.getStringFromPath(TestFixtures.NER_TARGET_LOCATION_PATH);
+
     }
 
     private void initMocks() throws IOException {
@@ -119,6 +131,8 @@ public abstract class AbstractResourceTest<T extends Resource> {
         when(plannerProxy.getEndpoint()).thenReturn(PLANNER_ENDPOINT);
         when(slaProxy.getEndpoint()).thenReturn(SLA_ENDPOINT);
 
+        when(effectorSummary.isPresent()).thenReturn(Boolean.TRUE);
+
         when(deployerProxy.getApplication(anyString())).thenReturn(applicationSummary);
         when(deployerProxy.getApplicationsTree()).thenReturn(applicationTree);
         when(deployerProxy.deployApplication(anyString())).thenReturn(taskSummaryDeploy);
@@ -126,6 +140,11 @@ public abstract class AbstractResourceTest<T extends Resource> {
         when(deployerProxy.getEntitiesFromApplication(anyString())).thenReturn(entitySummaries);
         when(deployerProxy.getEntitySensors(anyString(), anyString())).thenReturn(sensorSummaries);
         when(deployerProxy.getEntitySensorsValue(anyString(), anyString(), anyString())).thenReturn("0.7");
+        when(deployerProxy.getEffector(RANDOM_STRING, RANDOM_STRING, DeployerResource.MIGRATE_EFFECTOR))
+                .thenReturn(effectorSummary);
+
+        when(deployerProxy.postEffector(RANDOM_STRING, RANDOM_STRING, DeployerResource.MIGRATE_EFFECTOR, loc))
+                .thenReturn(effectorTaskSummaries);
 
         when(plannerProxy.getMonitoringRulesByTemplateId(anyString())).thenReturn(monitoringRules);
         when(plannerProxy.getAdps(anyString())).thenReturn(adps);
@@ -204,6 +223,10 @@ public abstract class AbstractResourceTest<T extends Resource> {
     public String getDam() {
         return dam;
     }
+    public String getLoc() {
+        return loc ;
+    }
+
 
     public DeployerProxy getDeployerProxy() {
         return deployerProxy;
@@ -228,5 +251,8 @@ public abstract class AbstractResourceTest<T extends Resource> {
 
     public List<EntitySummary> getEntitySummaries() {
         return entitySummaries;
+    }
+    public TaskSummary getEffectorTaskSummaries() {
+        return effectorTaskSummaries;
     }
 }

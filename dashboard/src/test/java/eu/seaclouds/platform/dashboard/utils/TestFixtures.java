@@ -24,6 +24,7 @@ public interface TestFixtures {
     String APPLICATION_PATH = "fixtures/application.json";
     String TASK_SUMMARY_DEPLOY_PATH = "fixtures/task-summary-deploy.json";
     String TASK_SUMMARY_DELETE_PATH = "fixtures/task-summary-delete.json";
+    String TASK_SUMMARY_MIGRATION_PATH = "fixtures/task-summary-migration.json";
     String ENTITIES_PATH = "fixtures/entities.json";
     String SENSORS_SUMMARIES_PATH = "fixtures/sensors.json";
 
@@ -43,4 +44,7 @@ public interface TestFixtures {
     String AAM_PATH = "fixtures/aam.yml";
     String DESIGNER_TOPOLOGY = "fixtures/designer-topology.json";
     String APPLICATION_TREE = "fixtures/application-tree.json";
+
+    //Location fixtures
+    String NER_TARGET_LOCATION_PATH = "fixtures/new-target-location.json";
 }

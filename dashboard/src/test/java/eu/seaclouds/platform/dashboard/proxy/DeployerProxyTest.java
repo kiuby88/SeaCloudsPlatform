@@ -17,22 +17,29 @@
 
 package eu.seaclouds.platform.dashboard.proxy;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.squareup.okhttp.mockwebserver.MockResponse;
-import eu.seaclouds.platform.dashboard.util.ObjectMapperHelpers;
-import eu.seaclouds.platform.dashboard.utils.TestFixtures;
-import eu.seaclouds.platform.dashboard.utils.TestUtils;
-import org.apache.brooklyn.rest.domain.ApplicationSummary;
-import org.apache.brooklyn.rest.domain.EntitySummary;
-import org.apache.brooklyn.rest.domain.SensorSummary;
-import org.apache.brooklyn.rest.domain.TaskSummary;
-import org.testng.annotations.Test;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
 
-import javax.ws.rs.core.MediaType;
 import java.util.List;
 import java.util.UUID;
 
-import static org.testng.Assert.assertEquals;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.core.MediaType;
+
+import org.apache.brooklyn.rest.domain.ApplicationSummary;
+import org.apache.brooklyn.rest.domain.EffectorSummary;
+import org.apache.brooklyn.rest.domain.EntitySummary;
+import org.apache.brooklyn.rest.domain.SensorSummary;
+import org.apache.brooklyn.rest.domain.TaskSummary;
+import org.eclipse.jetty.server.Response;
+import org.testng.annotations.Test;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.squareup.okhttp.mockwebserver.MockResponse;
+
+import eu.seaclouds.platform.dashboard.util.ObjectMapperHelpers;
+import eu.seaclouds.platform.dashboard.utils.TestFixtures;
+import eu.seaclouds.platform.dashboard.utils.TestUtils;
 
 public class DeployerProxyTest extends AbstractProxyTest<DeployerProxy> {
     private final String RANDOM_STRING = UUID.randomUUID().toString();
@@ -143,5 +150,46 @@ public class DeployerProxyTest extends AbstractProxyTest<DeployerProxy> {
 
         JsonNode fixture = ObjectMapperHelpers.JsonToObject(json, JsonNode.class);
         assertEquals(fixture, response);
+    }
+
+    @Test
+    public void testPostEffector() throws Exception {
+        String json = TestUtils.getStringFromPath(TestFixtures.TASK_SUMMARY_MIGRATION_PATH);
+        String newLocation = TestUtils.getStringFromPath(TestFixtures.NER_TARGET_LOCATION_PATH);
+        getMockWebServer().enqueue(new MockResponse()
+                        .setBody(json)
+                        .setHeader("Accept", MediaType.APPLICATION_JSON)
+                        .setHeader("Content-Type", MediaType.APPLICATION_JSON)
+        );
+        TaskSummary response = getProxy().postEffector(RANDOM_STRING, RANDOM_STRING, RANDOM_STRING, newLocation);
+        TaskSummary fixture = ObjectMapperHelpers.JsonToObject(json, TaskSummary.class);
+        assertEquals(fixture.getId(), response.getId());
+    }
+
+    @Test(expectedExceptions = NotFoundException.class)
+    public void testPostBadEffector() throws Exception {
+        String newLocation = TestUtils.getStringFromPath(TestFixtures.NER_TARGET_LOCATION_PATH);
+        getMockWebServer().enqueue(new MockResponse().setResponseCode(Response.SC_NOT_FOUND));
+        getProxy().postEffector(RANDOM_STRING, RANDOM_STRING, RANDOM_STRING, newLocation);
+    }
+
+    @Test
+    public void t() throws Exception {
+        DeployerProxy d = new DeployerProxy();
+        d.setHost("127.0.0.1");
+        d.setPort(8081);
+        d.setUser("admin");
+        d.setPassword("seaclouds");
+        assertNotNull(d);
+
+        List<EffectorSummary> a = d.getEffectors("zC9z8XeN", "YKq5PjYc");
+        assertNotNull(a);
+
+        TaskSummary aa = d.postEffector("zC9z8XeN", "YKq5PjYc", "migrate", "{\"locationSpec\":\"aws-ec2:us-west-2\"}");
+        assertNotNull(aa);
+
+        a = d.getEffectors("zC9z8XeN", "YKq5PjYc");
+        assertNotNull(a);
+
     }
 }
