@@ -115,7 +115,7 @@ brooklyn.catalog:
              port: ${PLANNER_PORT}
          discovererURL: ${DISCOVERER_URL}
          slaGeneratorURL: ${SLA_GENERATOR_URL}
-         deployableProviders: ["openstack-nova","openstack-keystone","openstack-nova-ec2", "byon", "sts", "elasticstack", "cloudstack", "rackspace-cloudidentity","aws-ec2","gogrid","elastichosts-lon-p","elastichosts-sat-p","elastichosts-lon-b","openhosting-east1","serverlove-z1-man","skalicloud-sdg-my","go2cloud-jhb1","softlayer","hpcloud-compute","rackspace-cloudservers-us","rackspace-cloudservers-uk","azurecompute","google-compute-engine","CloudFoundry"]
+         deployableProviders: ["openstack-nova","openstack-keystone","openstack-nova-ec2", "byon", "sts", "elasticstack", "cloudstack", "rackspace-cloudidentity","aws-ec2","gogrid","elastichosts-lon-p","elastichosts-sat-p","elastichosts-lon-b","openhosting-east1","serverlove-z1-man","skalicloud-sdg-my","go2cloud-jhb1","softlayer","hpcloud-compute","rackspace-cloudservers-us","rackspace-cloudservers-uk","azurecompute","google-compute-engine","cloudfoundry-instance"]
          filterOfferings: true
          influxdbPort: 8086
          influxdbURL: ${INFLUXDB_URL}
@@ -440,6 +440,7 @@ brooklyn.catalog:
           planner.grafana.url: $brooklyn:component("grafana").attributeWhenReady("host.address")
           planner.monitor_manager.url: $brooklyn:component("monitor-manager").attributeWhenReady("host.address")
           planner.monitor_manager.port: $brooklyn:component("monitor-manager").config("monitor.manager.port")
+          planner.influxdb.url: $brooklyn:component("influxdb").attributeWhenReady("host.address")
         launch.latch: $brooklyn:component("deployer").attributeWhenReady("service.isUp")
       - type: seaclouds-deployer
         name: seaclouds-deployer
