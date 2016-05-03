@@ -532,7 +532,7 @@ brooklyn.catalog:
               MONITOR_METRICS_URL: $brooklyn:formatString("http://%s:%s/v1/metrics", component("monitor-manager").attributeWhenReady("host.address"), component("monitor-manager").config("monitor.manager.port"))
               SLA_URL: $brooklyn:formatString("http://%s:%s", component("sla-core").attributeWhenReady("host.address"), component("sla-core").attributeWhenReady("http.port"))
         setup.latch: $brooklyn:component("sla-db").attributeWhenReady("service.isUp")
-      - type: org.apache.brooklyn.entity.database.postgresql.PostgreSqlNode
+      - type: org.apache.brooklyn.entity.database.mysql.MySqlNode
         name: seaclouds-sla-db
         id: sla-db
         brooklyn.config:
@@ -624,7 +624,7 @@ brooklyn.catalog:
               DB_PASSWORD: "_atossla_"
               MONITOR_METRICS_URL: $brooklyn:formatString("http://%s:%s/v1/metrics", component("monitor-manager").attributeWhenReady("host.address"), component("monitor-manager").config("monitor.manager.port"))
               SLA_URL: $brooklyn:formatString("http://%s:%s", component("sla-core").attributeWhenReady("host.address"), component("sla-core").attributeWhenReady("http.port"))
-      - type: org.apache.brooklyn.entity.database.postgresql.PostgreSqlNode
+      - type: org.apache.brooklyn.entity.database.mysql.MySqlNode
         name: seaclouds-sla-db
         id: sla-db
         brooklyn.config:
