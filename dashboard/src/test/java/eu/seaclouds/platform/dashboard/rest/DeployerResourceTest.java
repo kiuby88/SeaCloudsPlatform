@@ -83,27 +83,4 @@ public class DeployerResourceTest extends AbstractResourceTest<DeployerResource>
         assertFalse(Strings.isNullOrEmpty(response));
     }
 
-    @Test
-    public void testMigrateApplicationFalse() throws Exception {
-
-        DeployerProxy d = new DeployerProxy();
-        d.setHost("127.0.0.1");
-        d.setPort(8081);
-        d.setUser("admin");
-        d.setPassword("seaclouds");
-        assertNotNull(d);
-
-        String loc = TestUtils.getStringFromPath(TestFixtures.NER_TARGET_LOCATION_PATH);
-
-        DeployerResource d2 = new DeployerResource(d, getSlaProxy());
-        String response = (String) d2.migrateEntity("zC9z8XeN", "YKq5PjYc", loc).getEntity();
-        assertFalse(Strings.isNullOrEmpty(response));
-
-        //SeaCloudsApplicationData application = (SeaCloudsApplicationData) deployerResource.addApplication(getDam()).getEntity();
-        //assertNotNull(application.getName());
-        //assertNotNull(application.getToscaDam());
-        //assertNotNull(application.getAgreementId());
-        //assertNotNull(application.getDeployerApplicationId());
-        //assertNotNull(application.getMonitoringRulesIds());
-    }
 }
