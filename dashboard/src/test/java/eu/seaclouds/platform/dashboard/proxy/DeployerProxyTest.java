@@ -173,23 +173,4 @@ public class DeployerProxyTest extends AbstractProxyTest<DeployerProxy> {
         getProxy().postEffector(RANDOM_STRING, RANDOM_STRING, RANDOM_STRING, newLocation);
     }
 
-    @Test
-    public void t() throws Exception {
-        DeployerProxy d = new DeployerProxy();
-        d.setHost("127.0.0.1");
-        d.setPort(8081);
-        d.setUser("admin");
-        d.setPassword("seaclouds");
-        assertNotNull(d);
-
-        List<EffectorSummary> a = d.getEffectors("zC9z8XeN", "YKq5PjYc");
-        assertNotNull(a);
-
-        TaskSummary aa = d.postEffector("zC9z8XeN", "YKq5PjYc", "migrate", "{\"locationSpec\":\"aws-ec2:us-west-2\"}");
-        assertNotNull(aa);
-
-        a = d.getEffectors("zC9z8XeN", "YKq5PjYc");
-        assertNotNull(a);
-
-    }
 }
